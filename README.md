@@ -1,2 +1,2 @@
-# computer-generated-worlds
+# Computer Generated Worlds
 For my university personal project, I am developing a piece of software that can be used by Game Masters of Table-Top Roleplaying games generate a random world filled with people, places, items, and a history. These Features are linked together through Relationships, ensuring the world feels connected. This will be done through an iterative generation algorithm that generates Features and their Attributes, which influence the generation of their Relationships, which influences the next generation of Features and so forth.
