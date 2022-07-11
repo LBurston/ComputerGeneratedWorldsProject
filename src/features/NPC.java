@@ -24,5 +24,7 @@ public class NPC extends Being {
     String interaction;
     String alignment;
 
+    public NPC() {
 
+    }
 }
