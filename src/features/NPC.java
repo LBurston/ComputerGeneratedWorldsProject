@@ -1,22 +1,13 @@
 package features;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.stream.Stream;
+public class NPC {
 
-
-public class NPC extends Being {
-
-    Random randNum;
-    String name;
-    String race;
-    int age;
-    char gender;
-    boolean isAlive;
-    int height;
+    private String name;
+    private String race;
+    private char gender;
+    private char ageGroup;
+    private int age;
+    private boolean isAlive;
 //    char hairLength;
 //    String hairColour;
 //    String eyeColour;
@@ -31,60 +22,11 @@ public class NPC extends Being {
 //    String quirk;
 //    String interaction;
 
-    public NPC(HashMap<String, Integer> resources) {
-        randNum = new Random();
-
-        // Assign Race
-        try (Stream<String> lines = Files.lines(Paths.get("src/resources/npc/used/npcRace.txt"))){
-            race = lines.skip(randNum.nextInt(resources.get("npcRace"))).findFirst().get();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-
-        // Assign Gender
-        int ageNum = randNum.nextInt(9);
-        if (ageNum < 4) {
-            gender = 'm';
-        } else if (ageNum < 8) {
-            gender = 'f';
-        } else {
-            gender = 'n';
-        }
-
-        // Assign First Name based on Gender
-        String givenName = "";
-        String file = "";
-        String list = "";
-        if (gender == 'm') {
-            file = "src/resources/npc/used/names/npcMaleFirstNames.txt";
-            list = "npcMaleFirstNames";
-        } else if (gender == 'f') {
-            file = "src/resources/npc/used/names/npcFemaleFirstNames.txt";
-            list = "npcFemaleFirstNames";
-        } else if (randNum.nextBoolean()) {
-            file = "src/resources/npc/used/names/npcMaleFirstNames.txt";
-            list = "npcMaleFirstNames";
-        } else {
-            file = "src/resources/npc/used/names/npcFemaleFirstNames.txt";
-            list = "npcFemaleFirstNames";
-        }
-        try (Stream<String> lines = Files.lines(Paths.get(file))){
-            givenName = lines.skip(randNum.nextInt(resources.get(list))).findFirst().get();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-
-        // Assign Last Name
-        try (Stream<String> lines = Files.lines(Paths.get("src/resources/npc/used/names/npcLastNames.txt"))){
-            givenName += " " + lines.skip(randNum.nextInt(resources.get("npcLastNames"))).findFirst().get();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-        name = givenName;
+    public NPC() {
+        isAlive = true;
     }
 
-
-    // Getters and Setters
+    /* Getters and Setters */
     public String getName() {
         return name;
     }
@@ -109,8 +51,35 @@ public class NPC extends Being {
         this.age = age;
     }
 
+    public char getAgeGroup() {
+        return ageGroup;
+    }
+
+    public String getAgeGroupString() {
+        return switch (ageGroup) {
+            case 'c' -> "child";
+            case 't' -> "adolescent";
+            case 'a' -> "adult";
+            case 'e' -> "elderly";
+            default -> null;
+        };
+    }
+
+    public void setAgeGroup(char ageGroup) {
+        this.ageGroup = ageGroup;
+    }
+
     public char getGender() {
         return gender;
+    }
+
+    public String getGenderString() {
+        return switch (gender) {
+            case 'f' -> "female";
+            case 'm' -> "male";
+            case 'n' -> "non-binary";
+            default -> null;
+        };
     }
 
     public void setGender(char gender) {
@@ -123,14 +92,6 @@ public class NPC extends Being {
 
     public void setAlive(boolean alive) {
         isAlive = alive;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
     }
 
 //    public char getHairLength() {
