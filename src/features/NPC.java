@@ -1,6 +1,11 @@
 package features;
 
-public class NPC {
+import relationships.Predicate;
+import relationships.Relationship;
+
+import java.util.HashSet;
+
+public class NPC extends Feature {
 
     private String name;
     private String race;
@@ -8,6 +13,8 @@ public class NPC {
     private char ageGroup;
     private int age;
     private boolean isAlive;
+    private final HashSet<Relationship> subjectRelationships;
+    private final HashSet<Relationship> objectRelationships;
 //    char hairLength;
 //    String hairColour;
 //    String eyeColour;
@@ -24,6 +31,8 @@ public class NPC {
 
     public NPC() {
         isAlive = true;
+        subjectRelationships = new HashSet<Relationship>();
+        objectRelationships = new HashSet<Relationship>();
     }
 
     /* Getters and Setters */
@@ -94,7 +103,39 @@ public class NPC {
         isAlive = alive;
     }
 
-//    public char getHairLength() {
+    public HashSet<Relationship> getSubjectRelationships() {
+        return subjectRelationships;
+    }
+
+    public HashSet<Predicate> getSubjectRelationshipsPredicates() {
+        HashSet<Predicate> predicates = new HashSet<Predicate>();
+        for(Relationship relationship : subjectRelationships) {
+            predicates.add(relationship.getPredicate());
+        }
+        return predicates;
+    }
+
+    public void addSubjectRelationship(Relationship relationship) {
+        subjectRelationships.add(relationship);
+    }
+
+    public HashSet<Relationship> getObjectRelationships() {
+        return objectRelationships;
+    }
+
+    public HashSet<Predicate> getObjectRelationshipsPredicates() {
+        HashSet<Predicate> predicates = new HashSet<Predicate>();
+        for(Relationship relationship : objectRelationships) {
+            predicates.add(relationship.getPredicate());
+        }
+        return predicates;
+    }
+
+    public void addObjectRelationship(Relationship relationship) {
+        objectRelationships.add(relationship);
+    }
+
+    //    public char getHairLength() {
 //        return hairLength;
 //    }
 //

@@ -1,8 +1,12 @@
 package test;
 
 import features.NPC;
-import generators.NPCGenerator;
+import generators.feature.NPCGenerator;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class NPCGeneratorTest {
@@ -32,5 +36,18 @@ class NPCGeneratorTest {
         assertEquals(testNPCs[0].getAge(), testNPCs[1].getAge());
         assertEquals(testNPCs[0].getAgeGroup(), testNPCs[1].getAgeGroup());
         assertEquals(testNPCs[0].getAgeGroupString(), testNPCs[1].getAgeGroupString());
+    }
+
+    @Test
+    void noDuplicateNamesGeneratedIn1000() {
+        NPCGenerator testNPCGenerator = new NPCGenerator();
+        ArrayList<String> names = new ArrayList<>();
+        HashSet<String> namesCheck = new HashSet<>();
+        for(int i = 0; i < 1000; i++) {
+            names.add(testNPCGenerator.generateNPC().getName());
+        }
+        for(String name : names) {
+            assertTrue(namesCheck.add(name));
+        }
     }
 }

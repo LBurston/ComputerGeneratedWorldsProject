@@ -1,5 +1,6 @@
-package generators;
+package generators.feature;
 
+import exceptions.GenerationFailureException;
 import features.*;
 
 import java.io.*;
@@ -18,9 +19,11 @@ public class NPCGenerator {
     private final ArrayList<String> firstNamesMale;
     private final ArrayList<String> lastNames;
 
+    private final ArrayList<String> usedNames;  // Stores assigned names
+
     /**
-     * Constructor for the NPC Generator to create a random number
-     * generator and to import all the resources
+     * Constructor for the NPC Generator to create a random
+     * number generator and to import all the resources.
      */
     public NPCGenerator() {
         randNum = new Random();
@@ -32,13 +35,22 @@ public class NPCGenerator {
         firstNamesMale = new ArrayList<>();
         lastNames = new ArrayList<>();
 
+        usedNames = new ArrayList<>();
+
         importResources();
     }
 
+    /**
+     * Sets the random number generator to a specific seed
+     * @param seed Seed number
+     */
     public void setSeedRandom(long seed) {
         randNum.setSeed(seed);
     }
 
+    /**
+     * Imports all the txt files into ArrayLists and HashMaps
+     */
     private void importResources() {
         String resourceLocation = "src/resources/npc/used/";
         BufferedReader reader;
@@ -59,9 +71,9 @@ public class NPCGenerator {
             }
             races.addAll(raceDetails.keySet());
             reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println(ex.getMessage());
         }
 
 
@@ -86,9 +98,9 @@ public class NPCGenerator {
                 lastNames.add(currentLine);
             }
             reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println(ex.getMessage());
         }
     }
 
@@ -97,15 +109,20 @@ public class NPCGenerator {
      *
      * @return The generated NPC.
      */
-    public NPC generateNPC() {
-        NPC currentNPC = new NPC();
-        currentNPC.setRace(assignRace());
-        currentNPC.setGender(assignGender());
-        currentNPC.setName(assignFullName(currentNPC.getGender()));
-        currentNPC.setAgeGroup(assignAgeGroup());
-        currentNPC.setAge(assignAge(currentNPC.getRace(), currentNPC.getAgeGroup()));
+    public NPC generateNPC() throws GenerationFailureException {
+        try {
+            NPC currentNPC = new NPC();
+            currentNPC.setRace(assignRace());
+            currentNPC.setGender(assignGender());
+            currentNPC.setName(assignFullName(currentNPC.getGender()));
+            currentNPC.setAgeGroup(assignAgeGroup());
+            currentNPC.setAge(assignAge(currentNPC.getRace(), currentNPC.getAgeGroup()));
 
-        return currentNPC;
+            return currentNPC;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new GenerationFailureException("Unable to Generate NPC");
+        }
     }
 
     /**
@@ -135,22 +152,28 @@ public class NPCGenerator {
      * @return A String of the full name of the NPC
      */
     private String assignFullName(char gender) {
-        // Assign First Name based on Gender
-        String givenName;
-        if (gender == 'f') {
-            givenName = firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
-        } else if (gender == 'm') {
-            givenName = firstNamesMale.get(randNum.nextInt(firstNamesMale.size()));
-        } else if (randNum.nextBoolean()) {
-            givenName = firstNamesMale.get(randNum.nextInt(firstNamesMale.size()));
-        } else {
-            givenName = firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
+        String name = "";
+        // Generates name and checks if it has already been generated.
+        while (name.isEmpty()) {
+            // Assign First Name based on Gender
+            if (gender == 'f') {
+                name = firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
+            } else if (gender == 'm') {
+                name = firstNamesMale.get(randNum.nextInt(firstNamesMale.size()));
+            } else if (randNum.nextBoolean()) {
+                name = firstNamesMale.get(randNum.nextInt(firstNamesMale.size()));
+            } else {
+                name = firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
+            }
+
+            // Assign Last Name
+            name += " " + lastNames.get(randNum.nextInt(lastNames.size()));
+            if (usedNames.contains(name)) {
+                name = "";
+            }
         }
-
-        // Assign Last Name
-        givenName += " " + lastNames.get(randNum.nextInt(lastNames.size()));
-
-        return givenName;
+        usedNames.add(name);
+        return name;
     }
 
     /**

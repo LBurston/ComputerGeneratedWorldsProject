@@ -4,11 +4,12 @@ import features.*;
 public class WorldGenerator {
 
     World world;
-    FeatureGenerator featGen;
+    FeatureManager featMan;
+    RelationshipGenerator relationGen;
 
     public WorldGenerator() {
         world = new World();
-        featGen = new FeatureGenerator(world);
-
+        featMan = new FeatureManager(world);
+        relationGen = new RelationshipGenerator(world, featMan);
     }
 }
