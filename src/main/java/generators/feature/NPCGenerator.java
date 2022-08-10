@@ -6,11 +6,10 @@ import features.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
-public class NPCGenerator {
+public class NPCGenerator extends FeatureGenerator{
 
-    private final Random randNum;
+    private static NPCGenerator npcGenerator = null;
 
     private final HashMap<String, int[]> raceDetails;
     private final ArrayList<String> races;
@@ -25,9 +24,7 @@ public class NPCGenerator {
      * Constructor for the NPC Generator to create a random
      * number generator and to import all the resources.
      */
-    public NPCGenerator() {
-        randNum = new Random();
-
+    private NPCGenerator() {
         raceDetails = new HashMap<>();
         races = new ArrayList<>();
 
@@ -40,19 +37,18 @@ public class NPCGenerator {
         importResources();
     }
 
-    /**
-     * Sets the random number generator to a specific seed
-     * @param seed Seed number
-     */
-    public void setSeedRandom(long seed) {
-        randNum.setSeed(seed);
+    public static NPCGenerator getNPCGenerator() {
+        if(npcGenerator == null) {
+            npcGenerator = new NPCGenerator();
+        }
+        return npcGenerator;
     }
 
     /**
      * Imports all the txt files into ArrayLists and HashMaps
      */
-    private void importResources() {
-        String resourceLocation = "src/resources/npc/used/";
+    protected void importResources() {
+        String resourceLocation = "src/main/resources/npc/";
         BufferedReader reader;
         String currentLine;
 
@@ -81,19 +77,19 @@ public class NPCGenerator {
         try {
             /* Import First Names (Female) */
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "names/npcFirstNamesFemale.txt"));
+                    FileReader(resourceLocation + "npcFirstNamesFemale.txt"));
             while((currentLine = reader.readLine()) != null) {
                 firstNamesFemale.add(currentLine);
             }
             /* Import First Names (Male) */
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "names/npcFirstNamesMale.txt"));
+                    FileReader(resourceLocation + "npcFirstNamesMale.txt"));
             while((currentLine = reader.readLine()) != null) {
                 firstNamesMale.add(currentLine);
             }
             /* Import Last Names */
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "names/npcLastNames.txt"));
+                    FileReader(resourceLocation + "npcLastNames.txt"));
             while((currentLine = reader.readLine()) != null) {
                 lastNames.add(currentLine);
             }
@@ -109,7 +105,7 @@ public class NPCGenerator {
      *
      * @return The generated NPC.
      */
-    public NPC generateNPC() throws GenerationFailureException {
+    public NPC generateFeature() throws GenerationFailureException {
         try {
             NPC currentNPC = new NPC();
             currentNPC.setRace(assignRace());
@@ -182,11 +178,11 @@ public class NPCGenerator {
      * @return A char to represent the age group.
      */
     private char assignAgeGroup() {
-        int ageNum = randNum.nextInt(200);
-        if (ageNum < 160) { return 'a'; }       // Adult
-        else if (ageNum < 190) { return 'e'; }  // Elderly
-        else if (ageNum < 198) { return 't'; }  // Adolescent/Teen
-        else { return 'c'; }                    // Child
+        int ageNum = randNum.nextInt(100);
+        if (ageNum < 80) { return 'a'; }       // Adult
+        else if (ageNum < 95) { return 'e'; }  // Elderly
+        else if (ageNum < 99) { return 't'; }  // Adolescent/Teen
+        else { return 'c'; }                   // Child
     }
 
     /**

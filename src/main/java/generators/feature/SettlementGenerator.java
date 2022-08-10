@@ -3,15 +3,15 @@ package generators.feature;
 import exceptions.GenerationFailureException;
 import exceptions.NoMoreNamesException;
 import features.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
-public class SettlementGenerator {
+public class SettlementGenerator extends FeatureGenerator {
 
-    private final Random randNum;
+    private static SettlementGenerator settlementGenerator = null;
 
     private final HashMap<String, int[]> typeDetails;
     private final ArrayList<String> types;
@@ -22,13 +22,18 @@ public class SettlementGenerator {
 
     private final ArrayList<String> usedNames;  // Stores assigned names
 
+    private static final int MAX_HAMLET_RESIDENTS = 20;
+    private static final int MAX_VILLAGE_RESIDENTS = 40;
+    private static final int MAX_SMALL_TOWN_RESIDENTS = 80;
+    private static final int MAX_LARGE_TOWN_RESIDENTS = 100;
+    private static final int MAX_SMALL_CITY_RESIDENTS = 150;
+    private static final int MAX_LARGE_CITY_RESIDENTS = 200;
+
     /**
      * Constructor for the Settlement Generator to create a random
      * number generator and to import all the resources.
      */
-    public SettlementGenerator() {
-        randNum = new Random();
-
+    private SettlementGenerator() {
         typeDetails = new HashMap<>();
         types = new ArrayList<>();
 
@@ -41,19 +46,18 @@ public class SettlementGenerator {
         importResources();
     }
 
-    /**
-     * Sets the random number generator to a specific seed
-     * @param seed Seed number
-     */
-    public void setSeedRandom(long seed) {
-        randNum.setSeed(seed);
+    public static SettlementGenerator getSettlementGenerator() {
+        if(settlementGenerator == null) {
+            settlementGenerator = new SettlementGenerator();
+        }
+        return settlementGenerator;
     }
 
     /**
      * Imports all the txt files into ArrayLists and HashMaps
      */
-    private void importResources() {
-        String resourceLocation = "src/resources/settlement/";
+    protected void importResources() {
+        String resourceLocation = "src/main/resources/settlement/";
         BufferedReader reader;
         String currentLine;
 
@@ -108,7 +112,7 @@ public class SettlementGenerator {
      *
      * @return The generated Settlement.
      */
-    public Settlement generateSettlement() throws GenerationFailureException {
+    public Settlement generateFeature() throws GenerationFailureException {
         try {
             String type = assignType();
             char size = assignSize(type);
@@ -119,6 +123,11 @@ public class SettlementGenerator {
             currentSettlement.setSize(size);
             currentSettlement.setPopulation(population);
             currentSettlement.setName(name);
+
+            int maxResidents = assignMaxResidents(currentSettlement);
+            if(maxResidents > 0) {
+                currentSettlement.setMaxResidents(assignMaxResidents(currentSettlement));
+            } else { throw new GenerationFailureException("Max Residents failed to set"); }
 
             return currentSettlement;
         } catch (NoMoreNamesException ex) {
@@ -230,6 +239,23 @@ public class SettlementGenerator {
             singleNames.remove(index);
         }
         return name;
+    }
+
+    private int assignMaxResidents(@NotNull Settlement settlement) {
+        switch (settlement.getType()) {
+            case "Hamlet":
+                return MAX_HAMLET_RESIDENTS;
+            case "Village":
+                return MAX_VILLAGE_RESIDENTS;
+            case "Town":
+                if(settlement.getSize() == 's') { return MAX_SMALL_TOWN_RESIDENTS; }
+                else { return MAX_LARGE_TOWN_RESIDENTS; }
+            case "City":
+                if(settlement.getSize() == 's') { return MAX_SMALL_CITY_RESIDENTS; }
+                else { return MAX_LARGE_CITY_RESIDENTS; }
+            default:
+                return 0;
+        }
     }
 
     /* Getters */

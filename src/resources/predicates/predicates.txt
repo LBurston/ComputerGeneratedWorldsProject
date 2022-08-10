@@ -1,8 +1,0 @@
-NPC	lives in	Settlement	false
-NPC	is married to	NPC	true
-NPC	is a sibling of	NPC	true
-NPC	is the mother of	NPC	false
-NPC	is the father of	NPC	false
-NPC	is the child of	NPC	false
-NPC	killed	NPC	false
-Settlement	is ruled by	NPC	false

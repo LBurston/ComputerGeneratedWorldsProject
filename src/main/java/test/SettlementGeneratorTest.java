@@ -2,6 +2,7 @@ package test;
 
 import exceptions.GenerationFailureException;
 import features.Settlement;
+import generators.Randomiser;
 import generators.feature.SettlementGenerator;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ class SettlementGeneratorTest {
 
     @Test
     void importingResourcesShouldPopulateFields() {
-       SettlementGenerator testSettlementGen = new SettlementGenerator();
+       SettlementGenerator testSettlementGen = SettlementGenerator.getSettlementGenerator();
        assertNotNull(testSettlementGen.getTypes());
        assertNotNull(testSettlementGen.getTypeDetails());
        assertNotNull(testSettlementGen.getSingleNames());
@@ -24,12 +25,12 @@ class SettlementGeneratorTest {
 
     @Test
     void settingSeedShouldGenerateSameSettlement() {
-        SettlementGenerator testSettlementGen = new SettlementGenerator();
+        SettlementGenerator testSettlementGen = SettlementGenerator.getSettlementGenerator();
         Settlement[] testSettlements = new Settlement[2];
         for(int i = 0; i < 2; i++) {
-            testSettlementGen.setSeedRandom(2);
+            Randomiser.reset();
             try {
-                testSettlements[i] = testSettlementGen.generateSettlement();
+                testSettlements[i] = testSettlementGen.generateFeature();
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }
@@ -43,12 +44,12 @@ class SettlementGeneratorTest {
 
     @Test
     void noDuplicateNamesGeneratedIn1000() {
-        SettlementGenerator testSettlementGenerator = new SettlementGenerator();
+        SettlementGenerator testSettlementGenerator = SettlementGenerator.getSettlementGenerator();
         ArrayList<String> names = new ArrayList<>();
         HashSet<String> namesCheck = new HashSet<>();
         for(int i = 0; i < 1000; i++) {
             try {
-                names.add(testSettlementGenerator.generateSettlement().getName());
+                names.add(testSettlementGenerator.generateFeature().getName());
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }

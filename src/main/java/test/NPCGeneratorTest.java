@@ -1,6 +1,8 @@
 package test;
 
+import exceptions.GenerationFailureException;
 import features.NPC;
+import generators.Randomiser;
 import generators.feature.NPCGenerator;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ class NPCGeneratorTest {
 
     @Test
     void importingResourcesShouldPopulateFields() {
-        NPCGenerator testNPCGen = new NPCGenerator();
+        NPCGenerator testNPCGen = NPCGenerator.getNPCGenerator();
         assertNotNull(testNPCGen.getRaces());
         assertNotNull(testNPCGen.getRaceDetails());
         assertNotNull(testNPCGen.getFirstNamesFemale());
@@ -22,12 +24,16 @@ class NPCGeneratorTest {
     }
 
     @Test
-    void settingSeedShouldGenerateSameNPC() {
-        NPCGenerator testNPCGen = new NPCGenerator();
+    void resettingSeedShouldGenerateSameNPC() {
+        NPCGenerator testNPCGen = NPCGenerator.getNPCGenerator();
         NPC[] testNPCs = new NPC[2];
         for(int i = 0; i < 2; i++) {
-            testNPCGen.setSeedRandom(2);
-            testNPCs[i] = testNPCGen.generateNPC();
+            Randomiser.reset();
+            try {
+                testNPCs[i] = testNPCGen.generateFeature();
+            } catch (GenerationFailureException ex) {
+                ex.printStackTrace();
+            }
         }
         assertEquals(testNPCs[0].getName(), testNPCs[1].getName());
         assertEquals(testNPCs[0].getRace(), testNPCs[1].getRace());
@@ -40,11 +46,15 @@ class NPCGeneratorTest {
 
     @Test
     void noDuplicateNamesGeneratedIn1000() {
-        NPCGenerator testNPCGenerator = new NPCGenerator();
+        NPCGenerator testNPCGenerator = NPCGenerator.getNPCGenerator();
         ArrayList<String> names = new ArrayList<>();
         HashSet<String> namesCheck = new HashSet<>();
         for(int i = 0; i < 1000; i++) {
-            names.add(testNPCGenerator.generateNPC().getName());
+            try {
+                names.add(testNPCGenerator.generateFeature().getName());
+            } catch (GenerationFailureException ex) {
+                ex.printStackTrace();
+            }
         }
         for(String name : names) {
             assertTrue(namesCheck.add(name));
