@@ -30,7 +30,7 @@ class SettlementGeneratorTest {
         for(int i = 0; i < 2; i++) {
             Randomiser.reset();
             try {
-                testSettlements[i] = testSettlementGen.generateFeature();
+                testSettlements[i] = testSettlementGen.generateRandomFeature();
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }
@@ -49,7 +49,7 @@ class SettlementGeneratorTest {
         HashSet<String> namesCheck = new HashSet<>();
         for(int i = 0; i < 1000; i++) {
             try {
-                names.add(testSettlementGenerator.generateFeature().getName());
+                names.add(testSettlementGenerator.generateRandomFeature().getName());
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }

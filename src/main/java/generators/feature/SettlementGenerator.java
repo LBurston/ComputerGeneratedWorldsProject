@@ -4,6 +4,8 @@ import exceptions.GenerationFailureException;
 import exceptions.NoMoreNamesException;
 import features.*;
 import org.jetbrains.annotations.NotNull;
+import relationships.Predicate;
+import relationships.Relationship;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -112,7 +114,7 @@ public class SettlementGenerator extends FeatureGenerator {
      *
      * @return The generated Settlement.
      */
-    public Settlement generateFeature() throws GenerationFailureException {
+    public Settlement generateRandomFeature() throws GenerationFailureException {
         try {
             String type = assignType();
             char size = assignSize(type);
@@ -135,6 +137,13 @@ public class SettlementGenerator extends FeatureGenerator {
             throw new GenerationFailureException
                     ("Unable to generate new Settlement as no new names available");
         }
+    }
+
+    public Settlement generateFeatureFromRelationship(Relationship relationship, Predicate predicateBtoA) throws GenerationFailureException {
+        switch (predicateBtoA.getPredicateString()) {
+            case "residence", "rules", "trades", "rival" -> {return generateRandomFeature();}
+        }
+        return null;
     }
 
     /**

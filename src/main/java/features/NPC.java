@@ -7,10 +7,7 @@ import relationships.Relationship;
 
 import java.awt.image.AreaAveragingScaleFilter;
 import java.nio.channels.SelectableChannel;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NPC extends Feature {
@@ -117,17 +114,31 @@ public class NPC extends Feature {
     /* Relationship Getters */
 
     public Relationship getSettlementTheyRule() {
-        return Objects.requireNonNull(relationships.stream()
-                .filter(relationship -> relationship.getLeft().equals("rules"))
-                .findFirst().orElse(null)).getRight();
+        if(isARuler()) {
+            return Objects.requireNonNull(relationships.stream()
+                    .filter(relationship -> relationship.getLeft().equals("rules"))
+                    .findFirst().orElse(null)).getRight();
+        } else {return null;}
     }
 
     public Settlement getResidence() {
-        Triple<String, Feature, Relationship> residenceRelationship = relationships.stream()
-                .filter(relationship -> relationship.getLeft().matches("residence"))
+        Settlement residence = relationships.stream()
+                .filter(relationship -> relationship.getLeft().equals("residence"))
+                .map(relationship -> (Settlement) relationship.getMiddle())
                 .findFirst().orElse(null);
-        if(Objects.nonNull(residenceRelationship)) {
-            return (Settlement) residenceRelationship.getMiddle();
+        if(Objects.nonNull(residence)) {
+            return residence;
+        }
+        return null;
+    }
+
+    public NPC getPartner() {
+        NPC partner =  relationships.stream()
+                .filter(relationship -> relationship.getLeft().equals("partner"))
+                .map(relationship -> (NPC) relationship.getMiddle())
+                .findFirst().orElse(null);
+        if(Objects.nonNull(partner)) {
+            return  partner;
         }
         return null;
     }
@@ -148,6 +159,80 @@ public class NPC extends Feature {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    public ArrayList<NPC> getChildren() {
+        return relationships.stream()
+                .filter(relationship -> relationship.getLeft().equals("child"))
+                .map(relationship -> (NPC) relationship.getMiddle())
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public String getParentsDifferentRace() {
+        ArrayList<NPC> parents = getParents();
+        for(NPC parent : parents) {
+            String parentRace = parent.getRace();
+            if(!parentRace.equals(race)) { return parentRace; }
+        }
+        return race;
+    }
+
+    public String getSiblingsDifferentRace() {
+        ArrayList<NPC> siblings = getSiblings();
+        for(NPC sibling : siblings) {
+            String siblingRace = sibling.getRace();
+            if(!siblingRace.equals(race)) { return siblingRace; }
+        }
+        return race;
+    }
+
+    public int eldestSiblingAge() {
+        int eldestAge = age;
+        for(NPC sibling : getSiblings()) {
+            int siblingAge = sibling.getAge();
+            if (siblingAge > age) {
+                eldestAge = siblingAge;
+            }
+        }
+        return eldestAge;
+    }
+
+    public HashSet<NPC> getFamilyMembers() {
+        ArrayList<Triple<String, Feature, Relationship>> familyRelationships = relationships.stream()
+                .filter(relationship -> relationship.getLeft().matches("mother|father|parent|child|sibling"))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        ArrayList<NPC> familyMembers = new ArrayList<>();
+
+        for(int index = 0; index < familyRelationships.size(); index++) {
+            Triple<String, Feature, Relationship> currentMemberRelationship = familyRelationships.get(index);
+            NPC currentMember = (NPC) currentMemberRelationship.getMiddle();
+            familyMembers.add(currentMember);
+            String search = "";
+            switch(familyRelationships.get(index).getLeft()) {
+                case "mother", "father", "parent" -> { search = "mother|father|parent|child|sibling"; }
+                case "child", "sibling" -> { search = "child"; }
+            }
+            String finalSearch = search;
+            for(Triple<String, Feature, Relationship> currentMembersFamily : currentMember.getRelationships().stream()
+                    .filter(relationships -> relationships.getLeft().matches(finalSearch))
+                    .collect(Collectors.toCollection(ArrayList::new))) {
+                if(familyRelationships.stream().noneMatch(npc -> npc.getMiddle() == currentMembersFamily.getMiddle())) {
+                    familyRelationships.add(currentMembersFamily);
+                }
+            }
+        }
+        return new HashSet<>(familyMembers);
+    }
+
+    public NPC getOtherParent(NPC parent) {
+        if(hasBothParents()) {
+            ArrayList<NPC> parents = getParents();
+            if(parent == parents.get(0)) { return parents.get(1); }
+            else if (parent == parents.get(1)) { return parents.get(0); }
+        }
+        return null;
+    }
+
+
     /* Checkers */
     public boolean isNotAdult() {
         return ageGroup == 'c' || ageGroup == 't';
@@ -157,22 +242,26 @@ public class NPC extends Feature {
         return numberOfParents() == 2;
     }
 
-    public boolean hasOneParent() {
+    public boolean hasOnlyOneParent() {
         return numberOfParents() == 1;
     }
 
     public boolean hasParentOfSameRace() {
-        ArrayList<NPC> parents = relationships.stream()
-                .filter(relationship ->
-                        relationship.getLeft().matches("mother|father|parent"))
-                .map(relationship -> (NPC) relationship.getMiddle())
-                .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<NPC> parents = getParents();
         for(NPC parent : parents) {
             if (parent.getRace().equals(race)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean hasParentsOfDifferentRace() {
+        return !getParentsDifferentRace().equals(race);
+    }
+
+    public boolean hasSiblingsOfDifferentRace() {
+        return !getSiblingsDifferentRace().equals(race);
     }
 
     public boolean hasFather() {
@@ -217,16 +306,43 @@ public class NPC extends Feature {
         return age - childAge >= npcAdultAge;
     }
 
-    public boolean isFamilyMember(NPC npc) {
-        return relationships.stream()
-                .filter(relationship -> relationship.getMiddle() == npc)
-                .anyMatch(relationship -> relationship.getLeft().matches("mother|father|child|sibling"));
+    public boolean isFamilyMemberOf(NPC npc) {
+        return getFamilyMembers().contains(npc);
     }
 
-    public boolean isPartner(NPC npc) {
+    public boolean isPartnerOf(NPC npc) {
         return relationships.stream()
                 .filter(relationship -> relationship.getMiddle() == npc)
                 .anyMatch(relationship -> relationship.getLeft().equals("partner"));
+    }
+
+    public boolean isParentOf(NPC npc) {
+        return relationships.stream()
+                .filter(relationship -> relationship.getMiddle() == npc)
+                .anyMatch(relationship -> relationship.getLeft().equals("child"));
+    }
+
+    public boolean isChildOf(NPC npc) {
+        return relationships.stream()
+                .filter(relationship -> relationship.getMiddle() == npc)
+                .anyMatch(relationship -> relationship.getLeft().matches("mother|father|parent"));
+    }
+
+    public boolean isSiblingOf(NPC npc) {
+        return relationships.stream()
+                .filter(relationship -> relationship.getMiddle() == npc)
+                .anyMatch(relationship -> relationship.getLeft().equals("sibling"));
+    }
+
+    public boolean isARuler() {
+        return relationships.stream()
+                .anyMatch(relationship -> relationship.getLeft().equals("rules"));
+    }
+
+    public boolean isRulerOf(Settlement settlement) {
+        return relationships.stream()
+                .filter(relationship -> relationship.getMiddle() == settlement)
+                .anyMatch(relationship -> relationship.getLeft().equals("rules"));
     }
 
     //    public char getHairLength() {

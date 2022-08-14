@@ -82,6 +82,17 @@ public class Settlement extends Feature {
         } else { return null; }
     }
 
+    public boolean hasReachedMaxResidents() {
+        return relationships.stream()
+                .filter(relationship -> relationship.getLeft().equals("resident")).count() >= maxResidents;
+    }
+
+    public boolean isResidenceOf(NPC npc) {
+        return relationships.stream()
+                .filter(relationship -> relationship.getMiddle() == npc)
+                .anyMatch(relationship -> relationship.getLeft().equals("resident"));
+    }
+
     /* Getters and Setters */
 
     public String getType() {

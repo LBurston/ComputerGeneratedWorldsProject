@@ -3,6 +3,7 @@ import org.jetbrains.annotations.NotNull;
 import relationships.Relationship;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public class World {
@@ -19,7 +20,7 @@ public class World {
 
     public void saveFeatures(@NotNull ArrayList<Feature> newFeatures) {
         for(Feature newFeature: newFeatures) {
-            addFeature(newFeature);
+            saveFeature(newFeature);
         }
     }
 
@@ -28,13 +29,20 @@ public class World {
         relationship.storeRelationshipInFeatures();
     }
 
+    public void saveRelationships(ArrayList<Relationship> relationships) {
+        for(Relationship relationship : relationships) {
+            saveRelationship(relationship);
+        }
+    }
+
+
     public void saveUnfinishedRelationships(@NotNull ArrayList<Relationship> relationships) {
         for(Relationship relationship : relationships) {
             addUnfinishedRelationship(relationship);
         }
     }
 
-    public void addFeature(Feature feature) {
+    public void saveFeature(Feature feature) {
         features.add(feature);
     }
 
@@ -44,6 +52,14 @@ public class World {
 
     public void addUnfinishedRelationship(Relationship relationship) {
         unfinishedRelationships.add(relationship);
+    }
+
+    public void clearCompletedRelationshipsFromUnfinished() {
+        unfinishedRelationships.removeIf(Relationship::isCompleted);
+    }
+
+    public void removeUnfinishedRelationship(Relationship relationship) {
+        unfinishedRelationships.remove(relationship);
     }
 
     /* Getters */
@@ -58,15 +74,9 @@ public class World {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    //    public ArrayList<NPC> getNpcs() {
-//        return npcs;
-//    }
-//
-//    public ArrayList<Settlement> getSettlements() {
-//        return settlements;
-//    }
-
     public ArrayList<Relationship> getRelationships() {
         return relationships;
     }
+
+    public ArrayList<Relationship> getUnfinishedRelationships() { return unfinishedRelationships; }
 }

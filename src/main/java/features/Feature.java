@@ -16,6 +16,10 @@ public abstract class Feature {
 
     abstract public ArrayList<Predicate> filterSubjectPredicates(ArrayList<Predicate> predicates);
 
+    public Class<? extends Feature> getSubClass() {
+        return this.getClass();
+    }
+
     public String getName() {
         return name;
     }
@@ -34,6 +38,10 @@ public abstract class Feature {
 
     public void addRelationship(Triple<String, Feature, Relationship> relationship) {
         relationships.add(relationship);
+    }
+
+    public boolean hasNoRelationships() {
+        return relationships.isEmpty();
     }
 
     public void removeRelationship(Relationship relationshipToRemove) {

@@ -12,6 +12,7 @@ public class Relationship {
     private final Predicate predicateAtoB;
     private final Predicate predicateBtoA;
     private boolean lock;
+    private int unfinishedTimer;
     
 
     /* Constructors */
@@ -20,6 +21,7 @@ public class Relationship {
         this.predicateAtoB = predicateAtoB;
         this.predicateBtoA = predicateBtoA;
         lock = false;
+        unfinishedTimer = 3;
     }
 
     public Relationship(Feature featureA, Feature featureB, Predicate predicateAtoB, Predicate predicateBtoA) {
@@ -30,9 +32,14 @@ public class Relationship {
         if(noNulls()) {
             lock = true;
         }
+        unfinishedTimer = 0;
     }
 
     /* Checkers */
+
+    public boolean isOutOfTime() {
+        return unfinishedTimer <= 0;
+    }
 
     public boolean isCompleted() {
         return lock;
@@ -44,6 +51,10 @@ public class Relationship {
 
     /* Getters and Setters */
 
+    public void unfinishedCountdown() {
+        unfinishedTimer--;
+    }
+
     public Predicate[] getBothPredicates() {
         Predicate[] predicates = new Predicate[2];
         predicates[0] = predicateAtoB;
@@ -51,18 +62,26 @@ public class Relationship {
         return predicates;
     }
 
-    public void setSecondFeature(Feature feature) {
+    public Feature setSecondFeature(Feature feature) {
         if(!lock) {
             featureB = feature;
             if(noNulls()) {
                 lock = true;
+                return feature;
             }
         }
+        return null;
     }
 
     public Feature getOtherFeature(Feature feature) {
         if (feature == featureA) { return featureB; }
         else if (feature == featureB){ return featureA; }
+        else { return null; }
+    }
+
+    public Predicate getOtherPredicate(Predicate predicate) {
+        if (predicate == predicateAtoB) { return predicateBtoA; }
+        else if (predicate == predicateBtoA) { return predicateAtoB; }
         else { return null; }
     }
 
@@ -85,6 +104,24 @@ public class Relationship {
         else if (predicate == predicateBtoA) { return featureB; }
         else { return null; }
     }
+
+    public Feature getFeatureA() {
+        return featureA;
+    }
+
+    public Feature getFeatureB() {
+        return featureB;
+    }
+
+    public Predicate getPredicateAtoB() {
+        return predicateAtoB;
+    }
+
+    public Predicate getPredicateBtoA() {
+        return predicateBtoA;
+    }
+
+    /* Store Relationship in Features */
 
     public void storeRelationshipInFeatures() {
         if (lock) {
@@ -111,7 +148,7 @@ public class Relationship {
             featureB.addRelationship(Triple.of(predicateAtoBString, featureA, this));
         } else {
             featureA.addRelationship(Triple.of(predicateBtoAString, featureB, this));
-            NPC npcA = (NPC) featureB;
+            NPC npcA = (NPC) featureA;
             switch (npcA.getGender()) {
                 case 'm' -> featureB.addRelationship(Triple.of("father", featureA, this));
                 case 'f' -> featureB.addRelationship(Triple.of("mother", featureA, this));

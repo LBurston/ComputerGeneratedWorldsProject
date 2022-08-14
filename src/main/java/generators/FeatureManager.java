@@ -18,6 +18,7 @@ public class FeatureManager {
     private static final RelationshipGenerator relationshipGenerator = RelationshipGenerator.getRelationshipGenerator();
     private static final NPCGenerator npcGenerator = NPCGenerator.getNPCGenerator();
     private static final SettlementGenerator settlementGenerator = SettlementGenerator.getSettlementGenerator();
+    private static final Random randNum = Randomiser.getRandom();
 
     private World world;
 
@@ -56,14 +57,14 @@ public class FeatureManager {
         ArrayList<Feature> features = new ArrayList<>();
         for(int i = 0; i < npcs; i++) {
             try {
-                features.add(npcGenerator.generateFeature());
+                features.add(npcGenerator.generateRandomFeature());
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }
         }
         for(int i = 0; i < settlements; i++) {
             try {
-                features.add(settlementGenerator.generateFeature());
+                features.add(settlementGenerator.generateRandomFeature());
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }
@@ -149,90 +150,73 @@ public class FeatureManager {
                 NPC subjectNPC = (NPC) subjectFeature;
                 while(npcIterator.hasNext()) {
                     NPC npc = npcIterator.next();
-                    if (npc == subjectFeature || npc.isNotAdult() || npc.hasPartner() || npc.isFamilyMember(subjectNPC)) {
+                    if (npc == subjectNPC || npc.isNotAdult() || npc.hasPartner() || npc.isFamilyMemberOf(subjectNPC)) {
                         npcIterator.remove();
                     }
                 }
             }
             case "parent" -> {
-                NPC subjectNPC = (NPC) subjectFeature;
+                NPC childNPC = (NPC) subjectFeature;
                 boolean checkRace = false;
+                String race = "";
                 boolean checkGender = false;
-                if (subjectNPC.numberOfParents() == 1) {
-                    NPC subjectNPCParent = subjectNPC.getParents().get(0);
-                    char subjectNPCParentGender = subjectNPCParent.getGender();
-                    if (!subjectNPC.getRace().equals(subjectNPCParent.getRace())) {
+                char gender = '0';
+                boolean checkParentFamily = false;
+                NPC childNPCParent = null;
+                HashSet<NPC> childFamilyMembers = childNPC.getFamilyMembers();
+                if(childNPC.hasOnlyOneParent()) {
+                    childNPCParent = childNPC.getParents().get(0);
+                    race = childNPCParent.getRace();
+                    gender = childNPCParent.getGender();
+                    if (!childNPC.getRace().equals(race)) {
                         checkRace = true;
                     }
-                    if (subjectNPCParentGender != 'n') {
+                    if (gender != 'n') {
                         checkGender = true;
                     }
-                    while (npcIterator.hasNext()) {
-                        NPC npc = npcIterator.next();
-                        if (npc == subjectFeature || npc.isNotAdult() || npc.isFamilyMember(subjectNPC) ||
-                                npc.isPartner(subjectNPC) || npc.numberOfChildren() >= MAX_CHILDREN ||
-                                (checkRace && !npc.getRace().equals(subjectNPC.getRace())) ||
-                                (checkGender && subjectNPCParentGender == npc.getGender()) ||
-                                npc.oldEnoughAgeGapForChild(subjectNPC.getAge(), getNPCRaceAdultAge(npc))) {
-                            npcIterator.remove();
-                        }
-                    }
-                } else {
-                    while (npcIterator.hasNext()) {
-                        NPC npc = npcIterator.next();
-                        if (npc == subjectFeature || npc.isNotAdult() ||
-                                npc.isPartner(subjectNPC) || npc.numberOfChildren() >= MAX_CHILDREN ||
-                                npc.oldEnoughAgeGapForChild(subjectNPC.getAge(), getNPCRaceAdultAge(npc))) {
-                            npcIterator.remove();
-                        }
+                    checkParentFamily = true;
+                }
+
+                while(npcIterator.hasNext()) {
+                    NPC npc = npcIterator.next();
+                    if (npc == childNPC || npc.isNotAdult() ||
+                            npc.numberOfChildren() >= MAX_CHILDREN || npc.isPartnerOf(childNPC) ||
+                            !npc.oldEnoughAgeGapForChild(childNPC.getAge(), getNPCRaceAdultAge(npc)) ||
+                            !compatibleFamilyParent(npc, childNPC, childFamilyMembers) ||
+                            (checkRace && !npc.getRace().equals(race)) || (checkGender && npc.getGender() == gender ||
+                            (checkParentFamily && childNPCParent.isFamilyMemberOf(npc)))) {
+                        npcIterator.remove();
                     }
                 }
             }
             case "child" -> {
-                NPC subjectNPC = (NPC) subjectFeature;
-                char subjectNPCGender = subjectNPC.getGender();
-                switch (subjectNPCGender) {
-                    case 'm' -> {
-                        while(npcIterator.hasNext()) {
-                            NPC npc = npcIterator.next();
-                            if(npc.hasFather()) {
-                                npcIterator.remove();
-                                continue;
-                            }
-                            boolean checkRace = npc.hasOneParent() && !npc.hasParentOfSameRace();
-                            if (npc == subjectFeature || npc.isPartner(subjectNPC) ||
-                                    npc.isFamilyMember(subjectNPC) || npc.hasBothParents() ||
-                                    (checkRace && npc.getRace().equals(subjectNPC.getRace())) ||
-                                    subjectNPC.oldEnoughAgeGapForChild(npc.getAge(), getNPCRaceAdultAge(subjectNPC))) {
-                                npcIterator.remove();
-                            }
-                        }
+                NPC parentNPC = (NPC) subjectFeature;
+                NPC parentNPCPartner = null;
+                boolean parentHasPartner = parentNPC.hasPartner();
+                if(parentHasPartner) {
+                    parentNPCPartner = parentNPC.getPartner();
+                }
+                char parentNPCGender = parentNPC.getGender();
+                while(npcIterator.hasNext()) {
+                    NPC npc = npcIterator.next();
+                    boolean checkRace = false;
+                    boolean checkGender = false;
+                    boolean checkParentFamily = false;
+                    char npcParentGender = 'n';
+                    if (npc.hasOnlyOneParent()) {
+                        if (!npc.hasParentOfSameRace()) { checkRace = true; }
+                        npcParentGender = npc.getParents().get(0).getGender();
+                        if (npcParentGender != 'n') { checkGender = true; }
+                        checkParentFamily = true;
                     }
-                    case 'f' -> {
-                        while(npcIterator.hasNext()) {
-                            NPC npc = npcIterator.next();
-                            if(npc.hasMother()) {
-                                npcIterator.remove();
-                                continue;
-                            }
-                            boolean checkRace = npc.hasOneParent() && !npc.hasParentOfSameRace();
-                            if (npc == subjectFeature || npc.isPartner(subjectNPC) || npc.hasBothParents() ||
-                                    (checkRace && npc.getRace().equals(subjectNPC.getRace())) ||
-                                    subjectNPC.oldEnoughAgeGapForChild(npc.getAge(), getNPCRaceAdultAge(subjectNPC))) {
-                                npcIterator.remove();
-                            }
-                        }
-                    }
-                    default -> {
-                        while(npcIterator.hasNext()) {
-                            NPC npc = npcIterator.next();
-                            boolean checkRace = npc.hasOneParent() && !npc.hasParentOfSameRace();
-                            if (npc == subjectFeature || npc.isPartner(subjectNPC) || npc.hasBothParents() ||
-                                    (checkRace && npc.getRace().equals(subjectNPC.getRace())) ||
-                                    subjectNPC.oldEnoughAgeGapForChild(npc.getAge(), getNPCRaceAdultAge(subjectNPC))) {
-                                npcIterator.remove();
-                            }
-                        }
+
+                    if(npc == parentNPC || npc.hasBothParents() || npc.isPartnerOf(parentNPC) ||
+                            !parentNPC.oldEnoughAgeGapForChild(npc.getAge(), getNPCRaceAdultAge(parentNPC)) ||
+                            !compatibleFamilyChild(npc, parentNPC, parentHasPartner, parentNPCPartner) ||
+                            (checkRace && !npc.getRace().equals(parentNPC.getRace())) ||
+                            (checkGender && npcParentGender == parentNPCGender) ||
+                            (checkParentFamily && parentNPC.isFamilyMemberOf(npc.getParents().get(0)))) {
+                        npcIterator.remove();
                     }
                 }
             }
@@ -243,7 +227,7 @@ public class FeatureManager {
                 subjectNPCAndSiblings.add(subjectNPC);
                 while(npcIterator.hasNext()) {
                     NPC npc = npcIterator.next();
-                    if(npc == subjectNPC || npc.isFamilyMember(subjectNPC) || npc.isPartner(subjectNPC) ||
+                    if(npc == subjectNPC || npc.isFamilyMemberOf(subjectNPC) || npc.isPartnerOf(subjectNPC) ||
                             !compatibleFamilySiblings(npc, subjectNPCParents, subjectNPCAndSiblings)) {
                         npcIterator.remove();
                     }
@@ -371,15 +355,6 @@ public class FeatureManager {
         return npcGenerator.getRaceDetails().get(npc.getRace())[1];
     }
 
-    private @NotNull ArrayList<NPC> getPotentialSiblings(NPC npc1, NPC npc2) {
-        ArrayList<NPC> potentialSiblings = new ArrayList<>();
-        potentialSiblings.add(npc1);
-        potentialSiblings.add(npc2);
-        potentialSiblings.addAll(npc1.getSiblings());
-        potentialSiblings.addAll(npc2.getSiblings());
-        return potentialSiblings;
-    }
-
     private boolean compatibleSiblingsAge(@NotNull ArrayList<NPC> potentialSiblings) {
         ArrayList<Character> ageGroups = new ArrayList<>();
         for(NPC npc : potentialSiblings) {
@@ -391,6 +366,31 @@ public class FeatureManager {
                 case 'e' -> { if (ageGroups.contains('c') || ageGroups.contains('t')) { return false; }}
             }
             ageGroups.add(currentNPCAgeGroup);
+        }
+        return true;
+    }
+
+    private boolean compatibleFamilyParent(NPC parent, NPC child, HashSet<NPC> childFamilyMembers) {
+        if(parent.isFamilyMemberOf(child)) { return false; }
+        if(parent.hasPartner()) {
+            if(parent.isPartnerOf(child)) { return false; }
+            for(NPC familyMember : childFamilyMembers) {
+                if(parent.isPartnerOf(familyMember)) { return false;}
+            }
+        }
+        return true;
+    }
+
+    private boolean compatibleFamilyChild(NPC child, NPC parent, boolean parentHasPartner, NPC parentPartner) {
+        if(child.isFamilyMemberOf(parent)) { return false; }
+        if(parentHasPartner) {
+            if(child == parentPartner) { return false; }
+            HashSet<NPC> childFamilyMembers = child.getFamilyMembers();
+            for(NPC familyMember : childFamilyMembers) {
+                if (familyMember == parentPartner) {
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -409,17 +409,17 @@ public class FeatureManager {
         for(NPC sibling : allSiblings) {
             for(NPC sibling2: allSiblings) {
                 if(sibling == sibling2) { continue; }
-                if(sibling.isPartner(sibling2)) { return false; }
+                if(sibling.isPartnerOf(sibling2)) { return false; }
             }
             for (NPC parent : allParents) {
                 if(sibling == parent) { return false; }
-                if (sibling.isPartner(parent)) { return false; }
+                if (sibling.isPartnerOf(parent)) { return false; }
             }
         }
 
         for(NPC parent : allParents) {
             for(NPC parent2 : allParents) {
-                if(parent.isFamilyMember(parent2)) { return false; }
+                if(parent.isFamilyMemberOf(parent2)) { return false; }
             }
         }
 
@@ -443,6 +443,108 @@ public class FeatureManager {
                 if(!parent.oldEnoughAgeGapForChild(oldestSiblingAge, getNPCRaceAdultAge(parent))) {
                     return false;
                 }
+            }
+        }
+        return true;
+    }
+
+    public ArrayList<Feature> completeUnfinishedRelationships(@NotNull ArrayList<Relationship> unfinishedRelationships) throws GenerationFailureException {
+        ArrayList<Feature> newFeatures = new ArrayList<>();
+        Iterator<Relationship> relationshipIterator = unfinishedRelationships.iterator();
+        while(relationshipIterator.hasNext()) {
+            Relationship relationship = relationshipIterator.next();
+            if(isRelationshipStillPossible(relationship)) {
+                if(randNum.nextBoolean()) {
+                    Predicate predicateBtoA = relationship.getPredicateBtoA();
+                    switch (predicateBtoA.getRequiredSubjectClass().getSimpleName()) {
+                        case "NPC" -> {
+                            Feature newNPC = relationship.setSecondFeature(npcGenerator.generateFeatureFromRelationship(relationship, predicateBtoA));
+                            if(newNPC != null) {
+                                world.saveFeature(newNPC);
+                                newFeatures.add(newNPC);
+                            }
+                        }
+                        case "Settlement" -> {
+                            Feature newSettlement = relationship.setSecondFeature(settlementGenerator.generateFeatureFromRelationship(relationship, predicateBtoA));
+                            if(newSettlement != null) {
+                                world.saveFeature(newSettlement);
+                                newFeatures.add(newSettlement);
+                            }
+                        }
+                    }
+                    if (relationship.isCompleted()) {
+                        world.saveRelationship(relationship);
+                        relationshipGenerator.postRelationshipCleanUp(relationship);
+                    } else {
+                        relationship.unfinishedCountdown();
+                        if(relationship.isOutOfTime()) {
+                            relationshipIterator.remove();
+                            world.removeUnfinishedRelationship(relationship);
+                        }
+                    }
+                } else {
+                    relationship.unfinishedCountdown();
+                    if(relationship.isOutOfTime()) {
+                        relationshipIterator.remove();
+                        world.removeUnfinishedRelationship(relationship);
+                    }
+                }
+            } else {
+                relationshipIterator.remove();
+                world.removeUnfinishedRelationship(relationship);
+            }
+        }
+        world.clearCompletedRelationshipsFromUnfinished();
+        return newFeatures;
+    }
+
+    public boolean isRelationshipStillPossible(@NotNull Relationship relationship) {
+        Feature feature = relationship.getFeatureA();
+        Predicate predicate = relationship.getPredicateAtoB();
+        switch(predicate.getPredicateString()) {
+            case "resident" -> {
+                NPC npc = (NPC) feature;
+                if(npc.hasResidence()) { return false; }
+            }
+            case "ruler" -> {
+                NPC npc = (NPC) feature;
+                if(npc.hasResidence() || npc.isARuler()) { return false; }
+            }
+            case "partner" -> {
+                NPC npc = (NPC) feature;
+                if(npc.hasPartner()) { return false; }
+            }
+            case "parent" -> {
+                NPC npc = (NPC) feature;
+                if(npc.numberOfChildren() >= MAX_CHILDREN) { return false; }
+            }
+            case "child" -> {
+                NPC npc = (NPC) feature;
+                if(npc.hasBothParents()) { return false; }
+            }
+            case "sibling" -> {
+                NPC npc = (NPC) feature;
+                if(npc.numberOfSiblings() >= MAX_SIBLINGS) { return false; }
+            }
+            case "killed" -> {
+                NPC npc = (NPC) feature;
+                if(npc.isNotAlive()) { return false; }
+            }
+            case "residence" -> {
+                Settlement settlement = (Settlement) feature;
+                if(settlement.hasReachedMaxResidents()) { return false; }
+            }
+            case "rules" -> {
+                Settlement settlement = (Settlement) feature;
+                if(settlement.hasRuler()) { return false; }
+            }
+            case "trades" -> {
+                Settlement settlement = (Settlement) feature;
+                if(settlement.getTradingSettlements().size() >= MAX_TRADES) { return false; }
+            }
+            case "rival" -> {
+                Settlement settlement = (Settlement) feature;
+                if(settlement.getRivalSettlements().size() >= MAX_RIVALS) { return false; }
             }
         }
         return true;

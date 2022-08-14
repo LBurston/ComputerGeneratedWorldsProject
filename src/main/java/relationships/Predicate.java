@@ -8,11 +8,11 @@ public class Predicate {
     Class<? extends Feature> requiredSubjectClass;
     String predicate;
     Class<? extends Feature> requiredObjectClass;
-    Boolean isBiDirectional;
+    boolean isBiDirectional;
     private final int weight;
     Predicate oppositePredicate;
 
-    public Predicate(Class<? extends Feature> requiredSubject, String predicate, Class<? extends Feature> requiredObject, Boolean isBiDirectional, int weight) {
+    public Predicate(Class<? extends Feature> requiredSubject, String predicate, Class<? extends Feature> requiredObject, boolean isBiDirectional, int weight) {
         this.requiredSubjectClass = requiredSubject;
         this.predicate = predicate;
         this.requiredObjectClass = requiredObject;
@@ -41,7 +41,7 @@ public class Predicate {
         return requiredObjectClass;
     }
 
-    public Boolean getBiDirectional() {
+    public boolean getBiDirectional() {
         return isBiDirectional;
     }
 

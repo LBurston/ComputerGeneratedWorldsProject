@@ -30,7 +30,7 @@ class NPCGeneratorTest {
         for(int i = 0; i < 2; i++) {
             Randomiser.reset();
             try {
-                testNPCs[i] = testNPCGen.generateFeature();
+                testNPCs[i] = testNPCGen.generateRandomFeature();
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }
@@ -51,7 +51,7 @@ class NPCGeneratorTest {
         HashSet<String> namesCheck = new HashSet<>();
         for(int i = 0; i < 1000; i++) {
             try {
-                names.add(testNPCGenerator.generateFeature().getName());
+                names.add(testNPCGenerator.generateRandomFeature().getName());
             } catch (GenerationFailureException ex) {
                 ex.printStackTrace();
             }

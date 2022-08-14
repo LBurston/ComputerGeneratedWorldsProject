@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import relationships.Predicate;
 import relationships.Relationship;
 
+import javax.management.relation.Relation;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -74,32 +75,17 @@ public class RelationshipGenerator {
             // Saves the weight of not choosing a relationship to the end of the array
             // (Affected by the feature's current number of relationships)
             weightPool[predicateSize] = NO_RELATIONSHIP_WEIGHT * feature.numberOfRelationships();
-            // Adds all weights together then saves the value of each weight divided by the sum to a float array
-            int weightSum = IntStream.of(weightPool).sum();
-            float[] newWeightPool = new float[predicateSize + 1];
-            predicateIndex = 0;
-            for(int weight : weightPool) {
-                newWeightPool[predicateIndex] = (float) weight/weightSum;
-                predicateIndex++;
-            }
 
+            // Adds all weights together then saves the value of each weight divided by the sum to a float array
             // This allows for dynamically choosing the Predicate, changing weighting depending on what other
             // Predicates can be selected. Randomly chooses a float between 0-1, then one by one each weight
             // value is taken away until one reduces it below 0, giving the randomly chosen Predicate
-            float randomFloat = randNum.nextFloat();
-            Predicate chosenPredicate = null;
-
-            for(int choosingIndex = 0; choosingIndex < newWeightPool.length; choosingIndex++) {
-                randomFloat -= newWeightPool[choosingIndex];
-                if(randomFloat <= 0) {
-                    if(choosingIndex == newWeightPool.length - 1) {
-                        return null;
-                    }
-                    // Sets the chosen Predicate and breaks out of this Loop
-                    chosenPredicate = possiblePredicates.get(choosingIndex);
-                    break;
-                }
+            int chosenIndex = Randomiser.getRandomIndexFromWeighting(weightPool);
+            if(chosenIndex == predicateSize) {
+                return null;
             }
+            Predicate chosenPredicate = possiblePredicates.get(chosenIndex);
+
             // Checks chosenPredicate has been set and isn't null
             if(Objects.nonNull(chosenPredicate)) {
                 Predicate oppositePredicate = chosenPredicate.getOppositePredicate();
@@ -198,28 +184,53 @@ public class RelationshipGenerator {
 
     public void postRelationshipCleanUp(@NotNull Relationship relationship) throws GenerationFailureException {
         Predicate[] relationshipPredicates = relationship.getBothPredicates();
-        ArrayList<Relationship> newRelationships = new ArrayList<>();
         Unidirectional: for(int index = 0; index < 2; index++) {
             Predicate currentPredicate = relationshipPredicates[index];
             switch (currentPredicate.getPredicateString()) {
                 case "ruler" -> {
                     NPC newResident = (NPC) relationship.getFeatureFromPredicate(currentPredicate);
                     Settlement settlement = (Settlement) relationship.getOtherFeature(newResident);
-                    Predicate predAtoB = predicateHashMap.get("resident");
-                    Predicate predBtoA = predicateHashMap.get("residence");
+                    if(!settlement.isResidenceOf(newResident)) {
+                        Predicate predAtoB = predicateHashMap.get("resident");
+                        Predicate predBtoA = predicateHashMap.get("residence");
 
-                    Relationship newRelationship = new Relationship(newResident, settlement, predAtoB, predBtoA);
-                    if (newRelationship.isCompleted()) {
-                        newRelationships.add(new Relationship(newResident, settlement, predAtoB, predBtoA));
-                    } else {
-                        throw new GenerationFailureException("Null objects in Relationship Generation");
+                        Relationship newRelationship = new Relationship(newResident, settlement, predAtoB, predBtoA);
+                        if (newRelationship.isCompleted()) {
+                            world.saveRelationship(newRelationship);
+                        } else {
+                            throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                        }
                     }
                 }
                 case "parent" -> {
+                    NPC parent = (NPC) relationship.getFeatureFromPredicate(currentPredicate);
+                    NPC child = (NPC) relationship.getOtherFeature(parent);
+                    Predicate childPredicate = relationship.getOtherPredicate(currentPredicate);
 
-                }
-                case "child" -> {
+                    ArrayList<NPC> childSiblings = child.getSiblings();
+                    for(NPC sibling : childSiblings) {
+                        if (!parent.isParentOf(sibling)) {
+                            Relationship newRelationship =
+                                    new Relationship(parent, sibling, currentPredicate, childPredicate);
+                            if (newRelationship.isCompleted()) {
+                                world.saveRelationship(newRelationship);
+                            } else {
+                                throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                            }
+                        }
+                    }
 
+                    NPC childParent = child.getOtherParent(parent);
+                    if (childParent != null && !parent.hasPartner() && !childParent.hasPartner()
+                            && randNum.nextInt(10) < 7) {
+                            Predicate partner = getPredicateFromString("partner");
+                            Relationship newRelationship = new Relationship(parent, childParent, partner, partner);
+                        if (newRelationship.isCompleted()) {
+                            world.saveRelationship(newRelationship);
+                        } else {
+                            throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                        }
+                    }
                 }
                 case "sibling" -> {
                     Feature[] siblings = relationship.getBothFeatures();
@@ -231,37 +242,57 @@ public class RelationshipGenerator {
                     ArrayList<NPC> parentsB = npcB.getParents();
 
                     for(NPC siblingA : siblingsA) {
-                        newRelationships.add(
-                                new Relationship(npcB, siblingA, currentPredicate, currentPredicate));
+                        if (npcB != siblingA && !npcB.isSiblingOf(siblingA)) {
+                            Relationship newRelationship =
+                                    new Relationship(npcB, siblingA, currentPredicate, currentPredicate);
+                            if (newRelationship.isCompleted()) {
+                                world.saveRelationship(newRelationship);
+                            } else {
+                                throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                            }
+                        }
                         for(NPC siblingB : siblingsB) {
-                            newRelationships.add(
-                                    new Relationship(siblingA, siblingB, currentPredicate, currentPredicate));
+                            if (siblingA != siblingB && !siblingB.isSiblingOf(siblingA)) {
+                                Relationship newRelationship =
+                                        new Relationship(siblingA, siblingB, currentPredicate, currentPredicate);
+                                if (newRelationship.isCompleted()) {
+                                    world.saveRelationship(newRelationship);
+                                } else {
+                                    throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                                }
+                            }
                         }
                     }
                     for(NPC siblingB : siblingsB) {
-                        newRelationships.add(
-                                new Relationship(npcA, siblingB, currentPredicate, currentPredicate));
+                        if (npcA != siblingB && !npcA.isSiblingOf(siblingB)) {
+                            Relationship newRelationship =
+                                    new Relationship(npcA, siblingB, currentPredicate, currentPredicate);
+                            if (newRelationship.isCompleted()) {
+                                world.saveRelationship(newRelationship);
+                            } else {
+                                throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                            }
+                        }
                     }
                     Predicate child = predicateHashMap.get("child");
-                    Predicate parent = predicateHashMap.get("adult");
-                    for(NPC parentA : parentsA) {
-                        newRelationships.add(new Relationship(npcB, parentA, child, parent));
-                        for(NPC siblingB : siblingsB) {
-                            newRelationships.add(new Relationship(siblingB, parentA, child, parent));
-                        }
-                    }
-                    for(NPC parentB : parentsB) {
-                        newRelationships.add(new Relationship(npcA, parentB, child, parent));
-                        for(NPC siblingA : siblingsB) {
-                            newRelationships.add(new Relationship(siblingA, parentB, child, parent));
-                        }
-                    }
+                    Predicate parent = predicateHashMap.get("parent");
+                    pairParentsAndSiblings(npcB, siblingsB, parentsA, child, parent);
+                    pairParentsAndSiblings(npcA, siblingsB, parentsB, child, parent);
 
-                    if(parentsA.size() == 1 && parentsB.size() == 1
-                            && !parentsA.get(0).hasPartner() && !parentsB.get(0).hasPartner()) {
-                        newRelationships.add(
-                                new Relationship(parentsA.get(0), parentsB.get(0),
-                                        predicateHashMap.get("partner"), predicateHashMap.get("partner")));
+                    if(parentsA.size() == 1 && parentsB.size() == 1) {
+                        NPC parentA = parentsA.get(0);
+                        NPC parentB = parentsB.get(0);
+                        if(!parentA.hasPartner() && !parentB.hasPartner()
+                            && !parentA.isPartnerOf(parentB)) {
+                            Predicate partner = predicateHashMap.get("partner");
+                            Relationship newRelationship =
+                                new Relationship(parentsA.get(0), parentsB.get(0), partner, partner);
+                            if (newRelationship.isCompleted()) {
+                                world.saveRelationship(newRelationship);
+                            } else {
+                                throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                            }
+                        }
                     }
 
                     break Unidirectional;
@@ -273,10 +304,31 @@ public class RelationshipGenerator {
                     Relationship rulingRelationship = victim.getSettlementTheyRule();
                     if(rulingRelationship != null) { rulingRelationship.selfDestruct(); }
                 }
-
             }
         }
+    }
 
+    private void pairParentsAndSiblings(NPC npcA, ArrayList<NPC> siblingsB, ArrayList<NPC> parentsB, Predicate child, Predicate parent) throws GenerationFailureException {
+        for(NPC parentB : parentsB) {
+            if (!parentB.isParentOf(npcA)) {
+                Relationship newRelationship = new Relationship(npcA, parentB, child, parent);
+                if (newRelationship.isCompleted()) {
+                    world.saveRelationship(newRelationship);
+                } else {
+                    throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                }
+            }
+            for(NPC siblingA : siblingsB) {
+                if (!parentB.isParentOf(siblingA)) {
+                    Relationship newRelationship = new Relationship(siblingA, parentB, child, parent);
+                    if (newRelationship.isCompleted()) {
+                        world.saveRelationship(newRelationship);
+                    } else {
+                        throw new GenerationFailureException("Null objects in Post Relationship Generation");
+                    }
+                }
+            }
+        }
     }
 
     /**
