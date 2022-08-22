@@ -1,0 +1,9 @@
+Human	12	18	60	101
+Elf	12	100	650	801
+Dwarf	12	18	200	401
+Gnome	12	30	200	501
+Halfling	12	25	150	251
+Half-Elf	12	25	150	201
+Half-Orc	8	14	50	71
+Tiefling	12	18	70	121
+Dragonborn	8	15	60	91
