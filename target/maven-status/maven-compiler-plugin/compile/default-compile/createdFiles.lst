@@ -25,4 +25,5 @@ com\cgw\generators\RelationshipGenerator.class
 com\cgw\features\Folder.class
 com\cgw\exceptions\NoMoreNamesException.class
 com\cgw\generators\Randomiser.class
+com\cgw\Main.class
 com\cgw\CGWApp.class

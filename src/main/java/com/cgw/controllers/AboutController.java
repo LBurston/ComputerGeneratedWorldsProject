@@ -8,6 +8,7 @@ import javafx.scene.control.Hyperlink;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class AboutController {
 
@@ -18,8 +19,8 @@ public class AboutController {
     private HostServices hostServices;
 
     @FXML
-    private void openLicense() throws IOException {
-        Desktop.getDesktop().open(new File("src/main/java/COPYING.txt"));
+    private void openLicense() throws IOException, URISyntaxException {
+        Desktop.getDesktop().open(new File(getClass().getClassLoader().getResource("COPYING.txt").toURI()));
     }
 
     @FXML

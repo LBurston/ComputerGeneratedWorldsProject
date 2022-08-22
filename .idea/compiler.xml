@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="ComputerGeneratedWorldsProject" target="18" />
+      <module name="ComputerGeneratedWorldsProject" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

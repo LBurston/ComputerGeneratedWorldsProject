@@ -8,6 +8,7 @@ import com.cgw.relationships.Predicate;
 import com.cgw.relationships.Relationship;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -59,14 +60,16 @@ public class SettlementGenerator extends FeatureGenerator {
      * Imports all the txt files into ArrayLists and HashMaps
      */
     protected void importResources() {
-        String resourceLocation = "src/main/resources/settlement/";
+        String resourceLocation = "/settlement/";
         BufferedReader reader;
         String currentLine;
 
         /* Import types */
         try {
+            InputStream is = getClass().getResourceAsStream(resourceLocation+"settlementTypes.txt");
+            assert is != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "settlementTypes.txt"));
+                    InputStreamReader(is));
             while((currentLine = reader.readLine()) != null) {
                 String[] type = currentLine.split("\t");
                 int noOfDetails = type.length-1;
@@ -86,20 +89,26 @@ public class SettlementGenerator extends FeatureGenerator {
         /* Import Names */
         try {
             /* Import Single Names */
+            InputStream is1 = getClass().getResourceAsStream(resourceLocation + "settlementSingleNames.txt");
+            assert is1 != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "settlementSingleNames.txt"));
+                    InputStreamReader(is1));
             while((currentLine = reader.readLine()) != null) {
                 singleNames.add(currentLine);
             }
             /* Import Prefix Names */
+            InputStream is2 = getClass().getResourceAsStream(resourceLocation + "settlementPrefixNames.txt");
+            assert is2 != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "settlementPrefixNames.txt"));
+                    InputStreamReader(is2));
             while((currentLine = reader.readLine()) != null) {
                 prefixNames.add(currentLine);
             }
             /* Import Suffix Names */
+            InputStream is3 = getClass().getResourceAsStream(resourceLocation + "settlementSuffixNames.txt");
+            assert is3 != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "settlementSuffixNames.txt"));
+                    InputStreamReader(is3));
             while((currentLine = reader.readLine()) != null) {
                 suffixNames.add(currentLine);
             }

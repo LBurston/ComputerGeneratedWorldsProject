@@ -9,9 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import com.cgw.relationships.Predicate;
 import com.cgw.relationships.Relationship;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -124,12 +123,14 @@ public class RelationshipGenerator {
     }
 
     private void importPredicates() {
-        String fileLocation = "src/main/resources/predicates/predicates.txt";
         BufferedReader reader;
         String currentLine;
 
         try {
-            reader = new BufferedReader(new FileReader(fileLocation));
+            InputStream is = getClass().getResourceAsStream("/predicates/predicates.txt");
+            assert is != null;
+            reader = new BufferedReader(new
+                    InputStreamReader(is));
             ArrayList<String> oppositePredicates = new ArrayList<>();
             while((currentLine = reader.readLine()) != null) {
                 if (!currentLine.isBlank()) {

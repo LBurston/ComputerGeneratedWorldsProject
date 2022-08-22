@@ -9,9 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.cgw.relationships.Relationship;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
@@ -76,7 +75,10 @@ public class WorldGenerator {
 	private String generateName() {
 		ArrayList<String> names = new ArrayList<>();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/worldNames/worldNames.txt"));
+			InputStream is = getClass().getResourceAsStream("/worldNames/worldNames.txt");
+			assert is != null;
+			BufferedReader reader = new BufferedReader(new
+					InputStreamReader(is));
 			String currentLine;
 			while((currentLine = reader.readLine()) != null) {
 				names.add(currentLine);

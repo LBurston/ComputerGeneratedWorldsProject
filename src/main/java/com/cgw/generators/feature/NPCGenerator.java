@@ -7,6 +7,7 @@ import com.cgw.relationships.Relationship;
 import com.cgw.features.*;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -51,14 +52,16 @@ public class NPCGenerator extends FeatureGenerator {
      * Imports all the txt files into ArrayLists and HashMaps
      */
     protected void importResources() {
-        String resourceLocation = "src/main/resources/npc/";
+        String resourceLocation = "/npc/";
         BufferedReader reader;
         String currentLine;
 
         /* Import races */
         try {
+            InputStream is = getClass().getResourceAsStream(resourceLocation + "npcRace.txt");
+            assert is != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "npcRace.txt"));
+                    InputStreamReader(is));
             while((currentLine = reader.readLine()) != null) {
                 String[] race = currentLine.split("\t");
                 int noOfDetails = race.length-1;
@@ -79,20 +82,26 @@ public class NPCGenerator extends FeatureGenerator {
         /* Import names */
         try {
             /* Import First Names (Female) */
+            InputStream is1 = getClass().getResourceAsStream(resourceLocation + "npcFirstNamesFemale.txt");
+            assert is1 != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "npcFirstNamesFemale.txt"));
+                    InputStreamReader(is1));
             while((currentLine = reader.readLine()) != null) {
                 firstNamesFemale.add(currentLine);
             }
             /* Import First Names (Male) */
+            InputStream is2 = getClass().getResourceAsStream(resourceLocation + "npcFirstNamesMale.txt");
+            assert is2 != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "npcFirstNamesMale.txt"));
+                    InputStreamReader(is2));
             while((currentLine = reader.readLine()) != null) {
                 firstNamesMale.add(currentLine);
             }
             /* Import Last Names */
+            InputStream is3 = getClass().getResourceAsStream(resourceLocation + "npcLastNames.txt");
+            assert is3 != null;
             reader = new BufferedReader(new
-                    FileReader(resourceLocation + "npcLastNames.txt"));
+                    InputStreamReader(is3));
             while((currentLine = reader.readLine()) != null) {
                 lastNames.add(currentLine);
             }
