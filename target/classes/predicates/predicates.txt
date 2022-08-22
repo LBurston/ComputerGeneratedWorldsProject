@@ -1,0 +1,12 @@
+NPC	resident	Settlement	false	100	residence
+NPC	ruler	Settlement	false	1	rules
+NPC	partner	NPC	true	70	partner
+NPC	parent	NPC	false	40	child
+NPC	child	NPC	false	40	parent
+NPC	sibling	NPC	true	40	sibling
+NPC	killed	NPC	false	0	killer
+NPC	killer	NPC	false	0	killed
+Settlement	residence	NPC	false	90	resident
+Settlement	rules	NPC	false	100	ruler
+Settlement	trades	Settlement	true	50	trades
+Settlement	rival	Settlement	true	30	rival

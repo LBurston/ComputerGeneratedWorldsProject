@@ -4,9 +4,8 @@ module ComputerGeneratedWorldsProject {
     requires javafx.swing;
     requires javafx.web;
     requires javafx.media;
-    requires org.jetbrains.annotations;
     requires org.apache.commons.lang3;
-    requires org.junit.jupiter.api;
+    requires org.jetbrains.annotations;
 
     opens com.cgw to javafx.fxml;
     opens com.cgw.controllers to javafx.fxml;

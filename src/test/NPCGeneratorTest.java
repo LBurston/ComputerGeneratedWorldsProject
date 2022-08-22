@@ -1,5 +1,3 @@
-package com.cgw.test;
-
 import com.cgw.exceptions.GenerationFailureException;
 import com.cgw.features.NPC;
 import com.cgw.generators.Randomiser;
