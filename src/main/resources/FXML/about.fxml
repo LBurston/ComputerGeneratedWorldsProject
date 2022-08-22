@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cgw.controllers.AboutController">
+   <children>
+      <Label alignment="CENTER" layoutX="119.0" layoutY="13.0" prefHeight="67.0" prefWidth="174.0" text="CGW" textAlignment="CENTER" textFill="#cbe558" textOverrun="CLIP">
+         <font>
+            <Font name="Candara Bold" size="58.0" />
+         </font>
+         <effect>
+            <DropShadow spread="0.6">
+               <color>
+                  <Color red="0.4000000059604645" green="0.8784313797950745" blue="0.9686274528503418" />
+               </color>
+               <input>
+                  <DropShadow blurType="TWO_PASS_BOX" />
+               </input>
+            </DropShadow>
+         </effect>
+      </Label>
+      <ImageView fitHeight="67.0" fitWidth="72.0" layoutX="294.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/globe256.png" />
+         </image>
+      </ImageView>
+      <HBox layoutX="14.0" layoutY="83.0" prefHeight="300.0" prefWidth="400.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="83.0">
+         <children>
+            <VBox prefHeight="217.0" prefWidth="341.0">
+               <children>
+                  <Label text="Product Version:">
+                     <font>
+                        <Font name="Calibri Bold" size="12.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </Label>
+                  <Label text="Computer Generated Worlds 0.1">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Build Information:">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Calibri Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <Label text="Version: 0.1">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="20.0" layoutY="68.0" text="Date: 21/08/22">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label layoutX="20.0" layoutY="88.0" text="Java Version: 18.0.2">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label layoutX="10.0" layoutY="108.0" text="JavaFX Version 18">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label text="GNU General Public License v3.0:">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Label>
+                  <HBox alignment="CENTER_RIGHT">
+                     <VBox.margin>
+                        <Insets left="5.0" top="5.0" />
+                     </VBox.margin>
+                     <children>
+                        <Button fx:id="licenseButton" onAction="#openLicense" mnemonicParsing="false" prefHeight="31.0" prefWidth="56.0" text="Open">
+                           <font>
+                              <Font name="Calibri" size="14.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+               <HBox.margin>
+                  <Insets top="5.0" />
+               </HBox.margin>
+            </VBox>
+            <Line endX="113.2928466796875" endY="389.8786926269531" startX="113.29289245605469" startY="191.7928924560547">
+               <HBox.margin>
+                  <Insets top="5.0" />
+               </HBox.margin></Line>
+            <VBox prefHeight="217.0" prefWidth="320.0">
+               <children>
+                  <Label text="Designed and Coded by:">
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </Label>
+                  <Label layoutX="10.0" layoutY="10.0" text="Luke Burston">
+                     <font>
+                        <Font name="Calibri" size="15.0" />
+                     </font>
+                  </Label>
+                  <TextFlow>
+                     <children>
+                        <Label text="Email:">
+                           <font>
+                              <Font name="Calibri" size="12.0" />
+                           </font>
+                        </Label>
+                        <Hyperlink fx:id="emailLink" onAction="#openEmail" text="lb800@kent.ac.uk" underline="true">
+                           <font>
+                              <Font name="Calibri" size="14.0" />
+                           </font>
+                        </Hyperlink>
+                     </children>
+                  </TextFlow>
+                  <TextFlow layoutX="10.0" layoutY="41.0">
+                     <children>
+                        <Label text="Project:">
+                           <font>
+                              <Font name="Calibri" size="12.0" />
+                           </font>
+                        </Label>
+                        <Hyperlink fx:id="githubLink" onAction="#openGitHub" text="GitHub Page" underline="true">
+                           <font>
+                              <Font name="Calibri" size="14.0" />
+                           </font>
+                        </Hyperlink>
+                     </children>
+                  </TextFlow>
+                  <Label text="Created for the Computer Science MSc Project &amp; Dissertation looking into Iterative Generation in 'Computer Generated Worlds for TTRPGs'" textAlignment="JUSTIFY" wrapText="true">
+                     <VBox.margin>
+                        <Insets right="10.0" top="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Calibri" size="10.0" />
+                     </font>
+                  </Label>
+                  <Label text="A special thank you to my Project Supervisor Anna Jordanous" wrapText="true">
+                     <VBox.margin>
+                        <Insets top="18.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+               <HBox.margin>
+                  <Insets top="5.0" />
+               </HBox.margin>
+            </VBox>
+         </children>
+         <padding>
+            <Insets left="15.0" top="5.0" />
+         </padding>
+      </HBox>
+      <ImageView fitHeight="67.0" fitWidth="122.0" layoutX="20.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/logoUoK.jpg" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

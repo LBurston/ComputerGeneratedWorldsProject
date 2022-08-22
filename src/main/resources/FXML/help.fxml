@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox prefHeight="249.0" prefWidth="600.0">
+         <children>
+            <Label text="How to Use:" underline="true">
+               <font>
+                  <Font name="Calibri Bold" size="20.0" />
+               </font>
+               <VBox.margin>
+                  <Insets left="15.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <TextFlow prefHeight="36.0" prefWidth="600.0">
+               <children>
+                  <Label prefHeight="28.0" prefWidth="19.0" text="1)">
+                     <font>
+                        <Font name="Calibri Bold" size="22.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="TOP_LEFT" prefHeight="39.0" prefWidth="537.0" text="To generate a new world, press the Button on the main window." wrapText="true">
+                     <font>
+                        <Font name="Calibri" size="20.0" />
+                     </font>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets left="20.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </TextFlow>
+            <TextFlow prefHeight="41.0" prefWidth="600.0">
+               <children>
+                  <Label prefHeight="28.0" prefWidth="19.0" text="2)">
+                     <font>
+                        <Font name="Calibri Bold" size="22.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="TOP_LEFT" prefHeight="33.0" prefWidth="378.0" text="Wait for a brand new world to be generated." wrapText="true">
+                     <font>
+                        <Font name="Calibri" size="20.0" />
+                     </font>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets left="20.0" />
+               </padding>
+            </TextFlow>
+            <TextFlow layoutX="10.0" layoutY="146.0" prefHeight="64.0" prefWidth="600.0">
+               <children>
+                  <Label prefHeight="28.0" prefWidth="19.0" text="3)">
+                     <font>
+                        <Font name="Calibri Bold" size="22.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="TOP_LEFT" prefHeight="126.0" prefWidth="406.0" text="A Wiki of the world will appear when finished. Here you can navigate through Features of the World (currently People and Settlements) and their Relationships to other Features." wrapText="true">
+                     <font>
+                        <Font name="Calibri" size="20.0" />
+                     </font>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets left="20.0" />
+               </padding>
+            </TextFlow>
+         </children>
+      </VBox>
+      <ImageView fitHeight="146.0" fitWidth="128.0" layoutX="452.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/help/loading.jpg" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="34.0" fitWidth="150.0" layoutX="434.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/help/generateButton.jpg" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="275.0" fitWidth="358.0" layoutX="121.0" layoutY="278.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/help/wiki.jpg" />
+         </image>
+      </ImageView>
+      <Label layoutX="220.0" layoutY="267.0" text="Tabs to switch between Features" textFill="#dd0b0b">
+         <font>
+            <Font name="Calibri Bold" size="19.0" />
+         </font>
+      </Label>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#dd0b0b" height="14.0" layoutX="200.0" layoutY="288.0" opacity="0.26" smooth="false" stroke="#dd0b0b" strokeType="INSIDE" strokeWidth="0.0" width="279.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#8717cd" height="249.0" layoutX="121.0" layoutY="288.0" opacity="0.26" smooth="false" stroke="WHITE" strokeType="INSIDE" strokeWidth="0.0" width="78.0" />
+      <Label layoutX="20.0" layoutY="270.0" prefHeight="128.0" prefWidth="95.0" text="Tree View of Features. Double-Click to open Tab" textAlignment="RIGHT" textFill="#8717cd" wrapText="true">
+         <font>
+            <Font name="Calibri Bold" size="18.0" />
+         </font>
+      </Label>
+      <Label layoutX="481.0" layoutY="334.0" prefHeight="88.0" prefWidth="109.0" text="Relationships, with links to their page" textFill="#02a80d" wrapText="true">
+         <font>
+            <Font name="Calibri Bold" size="18.0" />
+         </font>
+      </Label>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#02a80d" height="146.0" layoutX="350.0" layoutY="343.0" opacity="0.26" smooth="false" stroke="WHITE" strokeType="INSIDE" strokeWidth="0.0" width="127.0" />
+      <Label layoutX="121.0" layoutY="553.0" text="Return to Homepage" textFill="#1944e1">
+         <font>
+            <Font name="Calibri Bold" size="18.0" />
+         </font>
+      </Label>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1944e1" height="18.0" layoutX="121.0" layoutY="537.0" opacity="0.26" smooth="false" stroke="WHITE" strokeType="INSIDE" strokeWidth="0.0" width="24.0" />
+      <Label layoutX="213.0" layoutY="443.0" prefHeight="51.0" prefWidth="120.0" text="Attributes of the Feature" textAlignment="CENTER" textFill="#ff7c42" wrapText="true">
+         <font>
+            <Font name="Calibri Bold" size="18.0" />
+         </font>
+      </Label>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ff7b00" height="103.0" layoutX="209.0" layoutY="340.0" opacity="0.26" smooth="false" stroke="WHITE" strokeType="INSIDE" strokeWidth="0.0" width="127.0" />
+   </children>
+</AnchorPane>
