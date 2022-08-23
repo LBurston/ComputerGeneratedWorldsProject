@@ -14,6 +14,7 @@ com\cgw\controllers\SceneNavigator.class
 com\cgw\controllers\WikiHomeTabController.class
 com\cgw\relationships\Predicate.class
 com\cgw\features\World.class
+com\cgw\controllers\LicenseController.class
 com\cgw\generators\FeatureManager.class
 com\cgw\generators\feature\FeatureGenerator.class
 com\cgw\features\NPC.class

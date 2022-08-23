@@ -2,8 +2,13 @@ package com.cgw.controllers;
 
 import javafx.application.HostServices;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.awt.*;
 import java.io.File;
@@ -19,8 +24,18 @@ public class AboutController {
     private HostServices hostServices;
 
     @FXML
-    private void openLicense() throws IOException, URISyntaxException {
-        Desktop.getDesktop().open(new File(getClass().getClassLoader().getResource("COPYING.txt").toURI()));
+    private void openLicense() throws IOException {
+        Stage licenseStage = new Stage();
+        licenseStage.setTitle("License");
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/license.fxml"));
+        licenseStage.setScene(new Scene(loader.load()));
+        LicenseController licenseController = loader.getController();
+
+        licenseStage.setResizable(false);
+        licenseStage.initStyle(StageStyle.UTILITY);
+        licenseStage.initModality(Modality.APPLICATION_MODAL);
+        licenseStage.show();
     }
 
     @FXML
