@@ -14,12 +14,12 @@
          <menus>
             <Menu mnemonicParsing="false" text="Help">
                <items>
-                  <MenuItem fx:id="aboutMenuItem" mnemonicParsing="false" onAction="#openAbout" text="About">
+                  <MenuItem mnemonicParsing="false" onAction="#openAbout" text="About">
                      <accelerator>
                         <KeyCodeCombination alt="DOWN" code="A" control="UP" meta="UP" shift="UP" shortcut="UP" />
                      </accelerator></MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem fx:id="helpMenuItem" mnemonicParsing="false" onAction="#openHelp" text="Help">
+                  <MenuItem mnemonicParsing="false" onAction="#openHelp" text="Help">
                      <accelerator>
                         <KeyCodeCombination alt="DOWN" code="H" control="UP" meta="UP" shift="UP" shortcut="UP" />
                      </accelerator></MenuItem>

@@ -11,7 +11,9 @@ com\cgw\controllers\WikiSettlementTabController.class
 com\cgw\generators\feature\SettlementGenerator.class
 com\cgw\controllers\StartScreenController.class
 com\cgw\controllers\SceneNavigator.class
+com\cgw\Bloom.class
 com\cgw\controllers\WikiHomeTabController.class
+com\cgw\EleutherAI.class
 com\cgw\relationships\Predicate.class
 com\cgw\features\World.class
 com\cgw\controllers\LicenseController.class
@@ -26,5 +28,6 @@ com\cgw\generators\RelationshipGenerator.class
 com\cgw\features\Folder.class
 com\cgw\exceptions\NoMoreNamesException.class
 com\cgw\generators\Randomiser.class
+com\cgw\GPT2AI.class
 com\cgw\Main.class
 com\cgw\CGWApp.class

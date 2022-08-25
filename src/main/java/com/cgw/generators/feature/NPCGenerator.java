@@ -7,17 +7,26 @@ import com.cgw.relationships.Relationship;
 import com.cgw.features.*;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * A Generator for NPCs.
+ * @author Luke Burston
+ * @author lb800@kent.ac.uk
+ * @version 0.1
+ * @since 0.1
+ */
 public class NPCGenerator extends FeatureGenerator {
 
+    // Singleton instance of itself.
     private static NPCGenerator npcGenerator = null;
 
-    private final HashMap<String, int[]> raceDetails;
+    // The imported races and details of their age group thresholds.
     private final ArrayList<String> races;
+    private final HashMap<String, int[]> raceDetails;
 
+    // The ArrayLists of different types of names.
     private final ArrayList<String> firstNamesFemale;
     private final ArrayList<String> firstNamesMale;
     private final ArrayList<String> lastNames;
@@ -41,6 +50,10 @@ public class NPCGenerator extends FeatureGenerator {
         importResources();
     }
 
+    /**
+     * Returns this Generator, or creates a new one if it hasn't been set up yet.
+     * @return The NPC Generator Singleton.
+     */
     public static NPCGenerator getNPCGenerator() {
         if(npcGenerator == null) {
             npcGenerator = new NPCGenerator();
@@ -49,7 +62,8 @@ public class NPCGenerator extends FeatureGenerator {
     }
 
     /**
-     * Imports all the txt files into ArrayLists and HashMaps
+     * Imports all the Resource txt files into ArrayLists and HashMaps,
+     * by reading the txt file line by line and saving it to its respective field.
      */
     protected void importResources() {
         String resourceLocation = "/npc/";
@@ -113,8 +127,7 @@ public class NPCGenerator extends FeatureGenerator {
     }
 
     /**
-     * Generates a new NPC.
-     *
+     * Generates a new NPC with randomly chosen attributes.
      * @return The generated NPC.
      */
     public NPC generateRandomFeature() throws GenerationFailureException {
@@ -133,16 +146,25 @@ public class NPCGenerator extends FeatureGenerator {
         }
     }
 
+    /**
+     * Generates a compatible NPC from a given Relationship.
+     * @param relationship The Relationship to generate from.
+     * @param predicateBtoA The Predicate of the Relationship that will be assigned to the Feature.
+     * @return The Generated NPC.
+     * @throws GenerationFailureException Exception for Failure to Generate NPC.
+     */
     public NPC generateFeatureFromRelationship(@NotNull Relationship relationship, Predicate predicateBtoA) throws GenerationFailureException {
         switch (predicateBtoA.getPredicateString()) {
             case "resident" -> { return generateRandomFeature(); }
             case "ruler", "partner", "killed", "killer" -> {
                 try {
+                    // For generating a Ruler, Partner, Victim, or Killer.
                     NPC currentNPC = new NPC();
                     currentNPC.setRace(assignRace());
                     currentNPC.setGender(assignGender());
                     currentNPC.setName(assignFullName(currentNPC.getGender()));
 
+                    // Ensures an adult is generated.
                     char chosenAgeGroup = '0';
                     if(randNum.nextBoolean()) { chosenAgeGroup = 'a'; }
                     else { chosenAgeGroup = 'e'; }
@@ -157,21 +179,27 @@ public class NPCGenerator extends FeatureGenerator {
                 }
             }
             case "parent" -> {
+                // For Generating a Parent.
                 try {
-                    NPC subjectNPC = (NPC) relationship.getFeatureA();
+                    NPC child = (NPC) relationship.getFeatureA();
                     NPC currentNPC = new NPC();
 
-                    if(subjectNPC.hasParentOfSameRace()) {
-                        currentNPC.setRace(subjectNPC.getSiblingsDifferentRace());
+                    // Checks if child has a Parent of the same race already.
+                    // If so, checks if any of their Siblings are of a different race,
+                    // to make sure all siblings have one parent of their race. Otherwise, makes them the same race.
+                    if(child.hasParentOfSameRace()) {
+                        currentNPC.setRace(child.getSiblingsDifferentRace());
                     } else {
-                        currentNPC.setRace(subjectNPC.getRace());
+                        currentNPC.setRace(child.getRace());
                     }
 
-                    if(subjectNPC.hasMother()) {
+                    // Checks if child has a male or female Parent already, to make the Generated Parent
+                    // either the opposite gender or non-binary. Otherwise, chooses randomly.
+                    if(child.hasMother()) {
                         if(randNum.nextInt(5) < 4) {
                             currentNPC.setGender('m');
                         } else { currentNPC.setGender('n');}
-                    } else if(subjectNPC.hasFather()) {
+                    } else if(child.hasFather()) {
                         if(randNum.nextInt(5) < 4) {
                             currentNPC.setGender('f');
                         } else { currentNPC.setGender('n');}
@@ -179,11 +207,13 @@ public class NPCGenerator extends FeatureGenerator {
                         currentNPC.setGender(assignGender());
                     }
 
+                    // Generates a new name with the last name of the Child.
+                    // Checks 5000 times if generated name does not already exist.
                     String name = "";
-                    int safetyCheck = 500;
+                    int safetyCheck = 5000;
                     while(name.isEmpty()) {
                         name = generateFirstName(currentNPC.getGender());
-                        name += " " + subjectNPC.getName().split(" ")[1];
+                        name += " " + child.getName().split(" ")[1];
                         if(usedNames.contains(name) && safetyCheck > 0) {
                             name = "";
                             safetyCheck--;
@@ -191,21 +221,30 @@ public class NPCGenerator extends FeatureGenerator {
                     }
                     currentNPC.setName(name);
 
-                    int youngestAgeBound = subjectNPC.eldestSiblingAge();
+                    // Gives the new Parent an age that is old enough to be the Parent of the oldest Sibling.
+                    int eldestSiblingAge = child.eldestSiblingAge();
+                    int youngestPossibleAdultAge = raceDetails.get(currentNPC.getRace())[1];
                     int oldestPossibleAdultAge = raceDetails.get(currentNPC.getRace())[2];
                     int oldestPossibleAge = raceDetails.get(currentNPC.getRace())[3];
-                    if (youngestAgeBound < oldestPossibleAge) {
-                        currentNPC.setAge(randNum.nextInt(youngestAgeBound, oldestPossibleAge));
-                    } else if ( youngestAgeBound == oldestPossibleAge) {
+                    if (eldestSiblingAge < oldestPossibleAge - eldestSiblingAge) {
+                        // If the eldest Siblings age is younger than the generated NPC's older possible age,
+                        // then the age set is chosen between the youngest Possible age plus the eldest Sibling's age,
+                        // and the oldest possible age the NPC can be alive.
+                        currentNPC.setAge(randNum.nextInt(youngestPossibleAdultAge + eldestSiblingAge, oldestPossibleAge));
+                    } else if ( youngestPossibleAdultAge == oldestPossibleAge) {
+                        // If instead it is exactly, it just sets the age as the eldest possible.
                         currentNPC.setAge(oldestPossibleAge);
                     } else {
-                        currentNPC.setAge(oldestPossibleAge + randNum.nextInt(oldestPossibleAdultAge));
+                        // If it is not possible to generate an alive NPC with a suitable age for the eldest
+                        // Sibling of the Child, then gives them an age above their eldest possible age and the
+                        // eldest Sibling's age.
+                        currentNPC.setAge(oldestPossibleAge + 1 + randNum.nextInt(eldestSiblingAge));
                         currentNPC.setAlive(false);
                     }
 
+                    // Sets their age group depending on the age given.
                     if(currentNPC.getAge() < oldestPossibleAdultAge) { currentNPC.setAgeGroup('a'); }
                     else { currentNPC.setAgeGroup('e'); }
-
 
                     return currentNPC;
                 } catch (Exception ex) {
@@ -214,18 +253,21 @@ public class NPCGenerator extends FeatureGenerator {
                 }
             }
             case "child" -> {
+                // For Generating a Child.
                 try {
-                    NPC subjectNPC = (NPC) relationship.getFeatureA();
+                    NPC parent = (NPC) relationship.getFeatureA();
                     NPC currentNPC = new NPC();
 
-                    currentNPC.setRace(subjectNPC.getRace());
+                    currentNPC.setRace(parent.getRace());
                     currentNPC.setGender(assignGender());
 
+                    // Generates a new name with the last name of the Parent.
+                    // Checks 5000 times if generated name does not already exist.
                     String name = "";
-                    int safetyCheck = 500;
+                    int safetyCheck = 5000;
                     while(name.isEmpty()) {
                         name = generateFirstName(currentNPC.getGender());
-                        name += " " + subjectNPC.getName().split(" ")[1];
+                        name += " " + parent.getName().split(" ")[1];
                         if(usedNames.contains(name) && safetyCheck > 0) {
                             name = "";
                             safetyCheck--;
@@ -233,14 +275,11 @@ public class NPCGenerator extends FeatureGenerator {
                     }
                     currentNPC.setName(name);
 
-                    int maxAge;
-                    if(subjectNPC.hasPartner() && subjectNPC.getPartner().getAge() < subjectNPC.getAge()) {
-                        NPC subjectNPCPartner = subjectNPC.getPartner();
-                        maxAge = subjectNPCPartner.getAge() - raceDetails.get(subjectNPCPartner.getRace())[1];
-                    } else { maxAge = subjectNPC.getAge() - raceDetails.get(subjectNPC.getRace())[1]; }
-
+                    // Sets the age of the Child to be less than that of the Parent's age minus their adult threshold.
+                    int maxAge = parent.getAge() - raceDetails.get(parent.getRace())[1];
                     currentNPC.setAge(randNum.nextInt(0, maxAge+1));
 
+                    // Loops through the age ranges to find the correct age range.
                     int[] maxAges = raceDetails.get(currentNPC.getRace());
                     int age = currentNPC.getAge();
                     int count = 0;
@@ -264,13 +303,83 @@ public class NPCGenerator extends FeatureGenerator {
                 }
             }
             case "sibling" -> {
+                // For Generating a Sibling.
                 try {
+                    NPC originalSibling = (NPC) relationship.getFeatureA();
                     NPC currentNPC = new NPC();
-                    currentNPC.setRace(assignRace());
+
+                    currentNPC.setRace(originalSibling.getRace());  // Sets race to be the same as the Sibling.
                     currentNPC.setGender(assignGender());
-                    currentNPC.setName(assignFullName(currentNPC.getGender()));
-                    currentNPC.setAgeGroup(assignAgeGroup());
-                    currentNPC.setAge(assignAge(currentNPC.getRace(), currentNPC.getAgeGroup()));
+
+                    // Generates a new name with the last name of the Parent.
+                    // Checks 5000 times if generated name does not already exist.
+                    String name = "";
+                    int safetyCheck = 5000;
+                    while(name.isEmpty()) {
+                        name = generateFirstName(currentNPC.getGender());
+                        name += " " + originalSibling.getName().split(" ")[1];
+                        if(usedNames.contains(name) && safetyCheck > 0) {
+                            name = "";
+                            safetyCheck--;
+                        }
+                    }
+                    currentNPC.setName(name);
+
+                    // Sets age group to be the same as the Sibling.
+                    currentNPC.setAgeGroup(originalSibling.getAgeGroup());
+                    // Gets the youngest possible age in its age group.
+                    int maxAgeGroupIndex = 0;
+                    int youngestPossibleAge = 0;
+                    int[] currentNPCRaceDetails = raceDetails.get(currentNPC.getRace());
+                    switch (currentNPC.getAgeGroup()) {
+                        case 't' -> {
+                            maxAgeGroupIndex = 1;
+                            youngestPossibleAge = currentNPCRaceDetails[0];
+                        }
+                        case 'a' -> {
+                            maxAgeGroupIndex = 2;
+                            youngestPossibleAge = currentNPCRaceDetails[1];
+                        }
+                        case 'e' -> {
+                            maxAgeGroupIndex = 3;
+                            youngestPossibleAge = currentNPCRaceDetails[2];
+                        }
+                    }
+
+                    if(originalSibling.numberOfParents() > 0) {
+                        // If the Sibling has any Parents, gets the age of the one who most recently became an adult.
+                        // Also gets that age at which they would have turned an adult.
+                        ArrayList<NPC> newParents = originalSibling.getParents();
+                        int parentClosestToAdultThresholdAge = Integer.MAX_VALUE;
+                        int adultThresholdOfParentClosest = 0;
+                        for(NPC newParent : newParents) {
+                            if(newParent.getAge() - (raceDetails.get(newParent.getRace())[1])
+                                    < parentClosestToAdultThresholdAge) {
+                                parentClosestToAdultThresholdAge = newParent.getAge();
+                                adultThresholdOfParentClosest = raceDetails.get(newParent.getRace())[1];
+                            }
+                        }
+                        int oldestPossibleAge = parentClosestToAdultThresholdAge - adultThresholdOfParentClosest;
+
+                        if(youngestPossibleAge == oldestPossibleAge) {
+                            // If there is only one age they can be, sets it to that
+                            currentNPC.setAge(
+                                    randNum.nextInt(youngestPossibleAge));
+                        } else if (oldestPossibleAge < currentNPCRaceDetails[maxAgeGroupIndex]){
+                            // If the oldestPossibleAge from Parents is younger than that max for their age group,
+                            // sets the eldest possible age as age group.
+                            currentNPC.setAge(
+                                    randNum.nextInt(youngestPossibleAge, oldestPossibleAge));
+                        } else {
+                            // Otherwise, gives them an age within their age group.
+                            currentNPC.setAge(
+                                    randNum.nextInt(youngestPossibleAge, currentNPCRaceDetails[maxAgeGroupIndex]));
+                        }
+                    } else {
+                        // If no pre-existing parent, the age given is between its age groups thresholds.
+                        currentNPC.setAge(
+                                randNum.nextInt(youngestPossibleAge, currentNPCRaceDetails[maxAgeGroupIndex]));
+                    }
 
                     return currentNPC;
                 } catch (Exception ex) {
@@ -284,7 +393,7 @@ public class NPCGenerator extends FeatureGenerator {
 
     /**
      * Randomly assigns a Race to the NPC.
-     * @return A String of the assigned Race
+     * @return A String of the assigned Race.
      */
     private String assignRace() throws GenerationFailureException {
         return races.get(randNum.nextInt(races.size()));
@@ -292,8 +401,7 @@ public class NPCGenerator extends FeatureGenerator {
 
     /**
      * Randomly assigns a gender to the NPC.
-     *
-     * @return A char to represent the gender
+     * @return A char to represent the gender.
      */
     private char assignGender() {
         int genderNum = randNum.nextInt(100);
@@ -303,22 +411,21 @@ public class NPCGenerator extends FeatureGenerator {
     }
 
     /**
-     * Assigns a full name to the newly generated NPC based on their Gender
-     *
-     * @param gender gender of the NPC
-     * @return A String of the full name of the NPC
+     * Assigns a full name to the newly generated NPC based on their Gender.
+     * @param gender gender of the NPC.
+     * @return A String of the full name of the NPC.
      */
     private String assignFullName(char gender) {
         String name = "";
         int safetyCheck = 5000;
         // Generates name and checks if it has already been generated.
         while (name.isEmpty()) {
-            // Assign First Name based on Gender
+            // Assign First Name based on Gender.
             if (gender == 'f') {
                 name = firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
             } else if (gender == 'm') {
                 name = firstNamesMale.get(randNum.nextInt(firstNamesMale.size()));
-            } else if (randNum.nextBoolean()) {
+            } else if (randNum.nextBoolean()) { // If Non-Binary randomly chooses from either list.
                 name = firstNamesMale.get(randNum.nextInt(firstNamesMale.size()));
             } else {
                 name = firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
@@ -327,7 +434,7 @@ public class NPCGenerator extends FeatureGenerator {
             // Assign Last Name
             name += " " + lastNames.get(randNum.nextInt(lastNames.size()));
 
-            // Checks isn't already taken, if it fails safetyCheck times, just returns last generated name
+            // Checks isn't already taken, if it fails 5000 times, just returns last generated name.
             if (usedNames.contains(name) && safetyCheck > 0) {
                 name = "";
                 safetyCheck--;
@@ -339,7 +446,6 @@ public class NPCGenerator extends FeatureGenerator {
 
     /**
      * Randomly assigns an age group to the NPC.
-     *
      * @return A char to represent the age group.
      */
     private char assignAgeGroup() {
@@ -352,7 +458,6 @@ public class NPCGenerator extends FeatureGenerator {
 
     /**
      * Assigns the age to the NPC based on their race and age group.
-     *
      * @param race The race of the NPC.
      * @param ageGroup The age group of the NPC.
      * @return The assigned age as an int value.
@@ -362,7 +467,6 @@ public class NPCGenerator extends FeatureGenerator {
         int upperBound = raceDetails.get(race)[3];
         switch (ageGroup) {
             case 'c' -> {
-                lowerBound = 0;
                 upperBound = raceDetails.get(race)[0];
             }
             case 't' -> {
@@ -381,6 +485,11 @@ public class NPCGenerator extends FeatureGenerator {
         return randNum.nextInt(lowerBound, upperBound);
     }
 
+    /**
+     * Generates a random first name based on the given Gender.
+     * @param gender The given Gender.
+     * @return The first name.
+     */
     public String generateFirstName(char gender) {
         if (gender == 'f') {
             return firstNamesFemale.get(randNum.nextInt(firstNamesFemale.size()));
@@ -393,33 +502,28 @@ public class NPCGenerator extends FeatureGenerator {
         }
     }
 
+    /**
+     * Adds to the ArrayList of used names, to avoid duplicates
+     * @param newName The new name being added.
+     */
     public void addToUsedNames(String newName) {
         usedNames.add(newName);
     }
 
-
     /* Getters */
 
+    /**
+     * Returns the race details HashMap of each race as a key and their age threshold array as the value.
+     * @return HashMap of the race details.
+     */
     public HashMap<String, int[]> getRaceDetails() {
         return raceDetails;
     }
 
-    public ArrayList<String> getRaces() {
-        return races;
-    }
-
-    public ArrayList<String> getFirstNamesFemale() {
-        return firstNamesFemale;
-    }
-
-    public ArrayList<String> getFirstNamesMale() {
-        return firstNamesMale;
-    }
-
-    public ArrayList<String> getLastNames() {
-        return lastNames;
-    }
-
+    /**
+     * Returns all the names currently assigned in the World.
+     * @return An ArrayList of the used names.
+     */
     public ArrayList<String> getUsedNames() {
         return usedNames;
     }

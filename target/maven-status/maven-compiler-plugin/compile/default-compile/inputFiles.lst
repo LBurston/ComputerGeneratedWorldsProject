@@ -6,6 +6,7 @@ D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\c
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\features\Folder.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\CGWApp.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\controllers\MainViewController.java
+D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\GhostWriter.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\relationships\Predicate.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\relationships\Relationship.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\controllers\LicenseController.java
@@ -19,12 +20,15 @@ D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\c
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\features\World.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\features\Settlement.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\exceptions\GenerationFailureException.java
+D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\EleutherAI.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\controllers\WikiNPCTabController.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\generators\Randomiser.java
+D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\Bloom.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\features\NPC.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\generators\feature\SettlementGenerator.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\controllers\SceneNavigator.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\controllers\WikiHomeTabController.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\generators\WorldGenerator.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\controllers\StartScreenController.java
+D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\com\cgw\GPT2AI.java
 D:\Luke\Documents\Coding\Practice\ComputerGeneratedWorldsProject\src\main\java\module-info.java

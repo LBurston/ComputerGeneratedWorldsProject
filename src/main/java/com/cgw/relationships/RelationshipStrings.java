@@ -1,5 +1,8 @@
 package com.cgw.relationships;
 
+/**
+ * Enum String values of the Relationship Labels to display on the World Wiki and to sort Relationships when displayed.
+ */
 public enum RelationshipStrings {
 
     RESIDENCE("Residence: "),
@@ -25,15 +28,28 @@ public enum RelationshipStrings {
 
     private final String text;
 
+    /**
+     * Sets the current text to the one given for Comparators.
+     * @param text String value given.
+     */
     RelationshipStrings(final String text) {
         this.text = text;
     }
 
+    /**
+     * Returns the String of the Relationship Text Value.
+     * @return The Relationship Text Value
+     */
     @Override
     public String toString() {
         return text;
     }
 
+    /**
+     * Returns the RelationshipString enum from the String for Comparators.
+     * @param string
+     * @return
+     */
     public static RelationshipStrings getRelationshipFromString(String string) {
         return switch (string) {
             case "Residence: " -> RESIDENCE;
