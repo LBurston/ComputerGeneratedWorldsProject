@@ -1,6 +1,5 @@
 package com.cgw.controllers;
 
-import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -18,10 +17,21 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * A Controller class for the License Window, displaying information on the GNU GPL v3.0 License.
+ * @author Luke Burston
+ * @author lb800@kent.ac.uk
+ * @version 0.1
+ * @since 0.1
+ */
 public class LicenseController implements Initializable {
 
     @FXML private VBox textArea;
 
+    /**
+     * Initializes the License window, loading in the License from a txt file.
+     * Each line is placed in a label and added to a VBox in the Text Area.
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {

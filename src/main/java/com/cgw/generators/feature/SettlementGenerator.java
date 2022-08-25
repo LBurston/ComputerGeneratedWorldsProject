@@ -8,23 +8,33 @@ import com.cgw.relationships.Predicate;
 import com.cgw.relationships.Relationship;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * A Generator for Settlementss.
+ * @author Luke Burston
+ * @author lb800@kent.ac.uk
+ * @version 0.1
+ * @since 0.1
+ */
 public class SettlementGenerator extends FeatureGenerator {
 
+    // Singleton instance of itself.
     private static SettlementGenerator settlementGenerator = null;
 
-    private final HashMap<String, int[]> typeDetails;
+    // The imported types and their population thresholds for different sizes.
     private final ArrayList<String> types;
+    private final HashMap<String, int[]> typeDetails;
 
+    // The ArrayLists of different types of names
     private final ArrayList<String> singleNames;
     private final ArrayList<String> prefixNames;
     private final ArrayList<String> suffixNames;
 
     private final ArrayList<String> usedNames;  // Stores assigned names
 
+    // Static values of each Settlement types max residents for Stopping Criteria checks.
     private static final int MAX_HAMLET_RESIDENTS = 20;
     private static final int MAX_VILLAGE_RESIDENTS = 40;
     private static final int MAX_SMALL_TOWN_RESIDENTS = 80;
@@ -49,6 +59,10 @@ public class SettlementGenerator extends FeatureGenerator {
         importResources();
     }
 
+    /**
+     * Returns this Generator, or creates a new one if it hasn't been set up yet.
+     * @return The Settlement Generator Singleton.
+     */
     public static SettlementGenerator getSettlementGenerator() {
         if(settlementGenerator == null) {
             settlementGenerator = new SettlementGenerator();
@@ -57,7 +71,8 @@ public class SettlementGenerator extends FeatureGenerator {
     }
 
     /**
-     * Imports all the txt files into ArrayLists and HashMaps
+     * Imports all the txt files into ArrayLists and HashMaps,
+     * by reading the txt file line by line and saving it to its respective field.
      */
     protected void importResources() {
         String resourceLocation = "/settlement/";
@@ -119,8 +134,7 @@ public class SettlementGenerator extends FeatureGenerator {
     }
 
     /**
-     * Generates a new Settlement.
-     *
+     * Generates a new Settlement with randomly chosen attributes.
      * @return The generated Settlement.
      */
     public Settlement generateRandomFeature() throws GenerationFailureException {
@@ -147,7 +161,15 @@ public class SettlementGenerator extends FeatureGenerator {
                     ("Unable to generate new Settlement as no new names available");
         }
     }
-
+    /**
+     * Generates a compatible Settlement from a given Relationship.
+     * As of now, there are no differences between Relationships and the type of Settlement they Generate,
+     * but this can be added to when new Relationships are implemented.
+     * @param relationship The Relationship to generate from.
+     * @param predicateBtoA The Predicate of the Relationship that will be assigned to the Feature.
+     * @return The Generated Settlement.
+     * @throws GenerationFailureException Exception for Failure to Generate Settlement.
+     */
     public Settlement generateFeatureFromRelationship(Relationship relationship, Predicate predicateBtoA) throws GenerationFailureException {
         switch (predicateBtoA.getPredicateString()) {
             case "residence", "rules", "trades", "rival" -> {return generateRandomFeature();}
@@ -156,10 +178,9 @@ public class SettlementGenerator extends FeatureGenerator {
     }
 
     /**
-     * Randomly assigns a type a settlement.
-     * Currently, evenly split between Hamlet, Village, Town, & City.
-     *
-     * @return A string of the Settlement type.
+     * Randomly assigns a type to the Settlement.
+     * Currently, even split between Hamlet, Village, Town, & City.
+     * @return A String of the Settlement type.
      */
     private String assignType() {
         return types.get(randNum.nextInt(types.size()));
@@ -167,11 +188,9 @@ public class SettlementGenerator extends FeatureGenerator {
 
     /**
      * Assigns a size to the Settlement based on its type, randomly.
-     * s for Small, l for Large to Towns and Cities
-     * n for n/a to Hamlets and Villages
-     *
-     * @param type The type of Settlement
-     * @return Character value of the size
+     * s = 'Small', l = 'Large', n = 'Normal' for Hamlets and Villages.
+     * @param type The type of Settlement.
+     * @return Character value of the size.
      */
     private char assignSize(String type) {
         int probabilitySmall;
@@ -180,7 +199,7 @@ public class SettlementGenerator extends FeatureGenerator {
             probabilitySmall = 8;   //  Probability of Small Town
         } else if (type.equals("City")) {   // Is a City
             probabilitySmall = 6;   //  Probability of Small City
-        } else { return 'n'; }      // No size
+        } else { return 'n'; }      // Normal size
 
         if (randNum.nextInt(10) < probabilitySmall) {
             return 's';             // Small
@@ -189,8 +208,7 @@ public class SettlementGenerator extends FeatureGenerator {
 
     /**
      * Assigns the population based on its size and type randomly
-     * then rounds it to the second-largest unit
-     *
+     * then rounds it to the second-largest unit.
      * @param type The type of Settlement
      * @param size The size category of the Settlement
      * @return A rounded number of the population
@@ -208,7 +226,7 @@ public class SettlementGenerator extends FeatureGenerator {
         }
         int population = randNum.nextInt(lowerBound,upperBound);
 
-        // Rounds the population at the unit below the largest
+        // Rounds the population at the unit below the largest. e.g. '3268' is rounded to '3300'.
         long round;
         if (population < 1000) {
             round = population/10;
@@ -227,9 +245,7 @@ public class SettlementGenerator extends FeatureGenerator {
      * Randomly Assigns a name to the Settlement.
      * The name can either be a random pairing of a prefix and suffix
      * or a single name, which is removed from the list if picked.
-     * If no new names are able to be generated after a certain amount of time
-     * throws an exception.
-     *
+     * If no new names are able to be generated after a certain amount of time, it throws an Exception.
      * @return A string of the name of the Settlement.
      */
     private String assignName() throws NoMoreNamesException {
@@ -259,6 +275,11 @@ public class SettlementGenerator extends FeatureGenerator {
         return name;
     }
 
+    /**
+     * Assigns the maximum residents this Settlement can hold for the Stopping Criteria.
+     * @param settlement The Settlement to assign to.
+     * @return The maximum value from the Static values in this class.
+     */
     private int assignMaxResidents(@NotNull Settlement settlement) {
         switch (settlement.getType()) {
             case "Hamlet":
@@ -274,26 +295,5 @@ public class SettlementGenerator extends FeatureGenerator {
             default:
                 return 0;
         }
-    }
-
-    /* Getters */
-    public HashMap<String, int[]> getTypeDetails() {
-        return typeDetails;
-    }
-
-    public ArrayList<String> getTypes() {
-        return types;
-    }
-
-    public ArrayList<String> getSingleNames() {
-        return singleNames;
-    }
-
-    public ArrayList<String> getPrefixNames() {
-        return prefixNames;
-    }
-
-    public ArrayList<String> getSuffixNames() {
-        return suffixNames;
     }
 }

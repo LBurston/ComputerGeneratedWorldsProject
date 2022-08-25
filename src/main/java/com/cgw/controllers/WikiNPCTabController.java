@@ -1,14 +1,18 @@
 package com.cgw.controllers;
 
+import com.cgw.Bloom;
+import com.cgw.EleutherAI;
+import com.cgw.GPT2AI;
 import com.cgw.features.Feature;
 import com.cgw.features.NPC;
 import com.cgw.relationships.Relationship;
 import com.cgw.relationships.RelationshipStrings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -19,30 +23,47 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Random;
-import java.util.ResourceBundle;
+import java.util.*;
 
+/**
+ * A Controller class for the NPC wiki page template to be loaded for each NPC.
+ * @author Luke Burston
+ * @author lb800@kent.ac.uk
+ * @version 0.1
+ * @since 0.1
+ */
 public class WikiNPCTabController implements Initializable {
 
-    @FXML public Tab npcTab;
+
+    @FXML public Tab npcTab;    // The tab for the NPC page.
+    // Labels for the NPC's Attributes.
     @FXML public Label npcName;
     @FXML public Label npcGender;
     @FXML public Label npcAge;
     @FXML public Label npcAgeGroup;
     @FXML public Label npcRace;
+    // VBox to be able to add as many Relationships as required.
+    // Within a ScrollPane which appears when Relationships overfill the VBox.
     @FXML public VBox relationshipLabelVBox;
+    // Story Text Section, with a Button to generate Story and Text Area to place the result.
+    @FXML public Button generateStoryButton;
+    @FXML public TextArea storyText;
+    @FXML public ComboBox<String> apiModelChoice;
 
     private WorldWikiController currentWiki;
-
     private NPC npc;
 
+    /**
+     * Sets up the NPC Wiki content based on the NPC given.
+     * @param npc The NPC for this Wiki.
+     */
+    @FXML
     public void setUpNPC(NPC npc) {
         this.npc = npc;
         npcTab.setUserData(npc);
         npcTab.setText(npc.getName());
 
+        // Sets the color for this NPC's Wiki Color theme, based on it's HashCode.
         Color wikiColor = getRandomHue();
         setWikiColor(wikiColor);
 
@@ -58,6 +79,8 @@ public class WikiNPCTabController implements Initializable {
 
         npcRace.setText(npc.getRace());
 
+        // Gets the Relationships of the NPC and places each on the Wiki with a Label
+        // of the relationship, and a HyperLink to take the user to their Wiki page.
         ArrayList<TextFlow> relationshipTexts = new ArrayList<>();
         ArrayList<Triple<String, Feature, Relationship>> relationships = npc.getTripleRelationships();
         for(Triple<String, Feature, Relationship> relationship : relationships) {
@@ -76,6 +99,7 @@ public class WikiNPCTabController implements Initializable {
                 }
             });
 
+            // Uses ENUMs to set the specific label for that relationship, different for different genders.
             switch(relationship.getLeft()) {
                 case "residence" -> relationshipLabel.setText(RelationshipStrings.RESIDENCE.toString());
                 case "rules" -> relationshipLabel.setText(RelationshipStrings.RULES.toString());
@@ -113,6 +137,7 @@ public class WikiNPCTabController implements Initializable {
             relationshipTexts.add(new TextFlow(relationshipLabel, relationshipFeature));
         }
 
+        // Compares the Relationships by their tags and sorts them into an order based on their Enum order.
         Comparator<TextFlow> relationshipViewOrder = (o1, o2) -> {
             Label l1 = (Label) o1.getChildren().get(0);
             Label l2 = (Label) o2.getChildren().get(0);
@@ -124,6 +149,10 @@ public class WikiNPCTabController implements Initializable {
         relationshipLabelVBox.getChildren().addAll(relationshipTexts);
     }
 
+    /**
+     * Sets all the Labels and Button text's to the same color for the NPC's Theme.
+     * @param wikiColor Randomly chosen Hue for the NPC based on it's HashCode.
+     */
     private void setWikiColor(Color wikiColor) {
         npcName.setTextFill(wikiColor);
         npcGender.setTextFill(wikiColor);
@@ -132,6 +161,12 @@ public class WikiNPCTabController implements Initializable {
         npcRace.setTextFill(wikiColor);
     }
 
+    /**
+     * Creates a new Color based on the preset Saturation and Brightness, but uses the
+     * NPC's HashCode to create a random Hue value, which will remain the same for
+     * whenever this NPC's page is loaded.
+     * @return The Color created with a Random Hue value.
+     */
     public Color getRandomHue() {
         Color initialColor = (Color) npcName.getTextFill();
         double[] hsb = new double[3];
@@ -143,13 +178,50 @@ public class WikiNPCTabController implements Initializable {
         return Color.hsb(hsb[0], hsb[1], hsb[2]);
     }
 
+    /**
+     * Sets the Wiki Controller for the Wiki Scene in order to
+     * call its methods for opening a new Tab.
+     * @param currentWiki The World Wiki Controller.
+     */
     public void setCurrentWiki(WorldWikiController currentWiki) {
         this.currentWiki = currentWiki;
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    /**
+     * Calls the API for text Generation and sets the text in the Text Area.
+     */
+    public void generateStory() throws IOException {
+        String prompt = "This is a story about " + npcName.getText() + ", a " + npcAge.getText().split(" ")[0] +
+                " year-old " + npcAgeGroup.getText() + " " + npcRace.getText() + ", who ";
+        switch (apiModelChoice.getValue()) {
+            case "GPT2" -> {
+                String response = Objects.requireNonNull(GPT2AI.cURLTest(prompt)).substring(22);
+                response = response.substring(0, response.length() - 3);
+                response = response.replace(" }", "");
 
+                storyText.setText(response);
+            }
+            case "Bloom" -> {
+                storyText.setText(Bloom.cURLTest(prompt));
+            }
+            case "Eleuther" -> {
+                String response = Objects.requireNonNull(EleutherAI.cURLTest(prompt)).substring(22);
+                response = response.substring(0, response.length() - 3);
+                response = response.replace(" }", "");
+                response = response.replace("'{", " ");
+                response = response.replace("}'{", " ");
+
+                storyText.setText(response);
+            }
+        }
     }
 
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        storyText.setWrapText(true);
+
+        ObservableList<String> apiChoices = FXCollections.observableArrayList("GPT2", "Bloom", "Eleuther");
+        apiModelChoice.getItems().addAll(apiChoices);
+        apiModelChoice.setValue(apiModelChoice.getItems().get(0));
+    }
 }
